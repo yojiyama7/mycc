@@ -20,6 +20,10 @@ re:
 	$(MAKE) clean
 	$(MAKE) all
 
+.PHONY: test
+test: $(NAME)
+	./test.sh
+
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 

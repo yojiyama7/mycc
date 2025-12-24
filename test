@@ -6,7 +6,7 @@ assert() {
   input="$2"
 
   ./mycc "$input" > tmp.s
-  cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
+  cc -o tmp tmp.s
   ./tmp
   actual="$?"
 
@@ -20,6 +20,6 @@ assert() {
 
 assert 0 0
 assert 42 42
-assert 21 "5+20-4"
+assert "5+20-4" 21
 
 echo OK
