@@ -25,4 +25,12 @@ assert 32 "40 - 13 + 5"
 assert 47 '5+6*7'
 assert 15 '5*(9-6)'
 assert 4 '(3+5)/2'
+assert 6 '-2+(-2)+10'
+assert 1 '1 == 1'
+assert 1 '10 != 42'
+assert 0 "5 < 3"
+assert 1 "5 > 3"
+assert 1 "5 >= 3"
+assert 0 "5 <= 3"
+assert 1 "(0 == (0 + 3)) == 0"
 echo OK

@@ -1,5 +1,5 @@
 CC := cc
-CFLAGS := -std=c11 -Wall -Wextra -Werror -g -static
+CFLAGS := -std=c11 -Wall -Wextra -Werror -Wimplicit-fallthrough -g -static
 NAME := mycc
 SRCS := main.c
 OBJS := $(SRCS:.c=.o)

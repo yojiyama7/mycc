@@ -19,6 +19,7 @@ struct s_Token {
   Token *next;    // 次の入力トークン
   int val;        // kindがTK_NUMの場合、その数値
   char *str;      // トークン文字列
+  int len;
 };
 
 Token *token;
@@ -37,17 +38,21 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
-bool consume(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
+bool consume(char *op) {
+  if (token->kind != TK_RESERVED ||
+      (int)strlen(op) != token->len ||
+      memcmp(op, token->str, token->len) != 0) {
     return false;
   }
   token = token->next;
   return true;
 }
 
-void expect(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
-    error_at(token->str, "'%c'ではありません", op);
+void expect(char *op) {
+  if (token->kind != TK_RESERVED ||
+      (int)strlen(op) != token->len ||
+      memcmp(op, token->str, token->len) != 0) {
+    error_at(token->str, "'%s'ではありません", op);
   }
   token = token->next;
 }
@@ -83,8 +88,26 @@ Token *tokenize(char *p) {
       p++;
       continue;
     }
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
-      cur = new_token(TK_RESERVED, cur, p++);
+    if (memcmp(p, "==", 2) == 0 ||
+        memcmp(p, "!=", 2) == 0 ||
+        memcmp(p, "<=", 2) == 0 ||
+        memcmp(p, ">=", 2) == 0 ) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 2;
+      p += 2;
+      continue;
+    }
+    if (*p == '+' ||
+        *p == '-' ||
+        *p == '*' ||
+        *p == '/' ||
+        *p == '(' ||
+        *p == ')' ||
+        *p == '<' ||
+        *p == '>' ) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 1;
+      p++;
       continue;
     }
     if (isdigit(*p)) {
@@ -96,6 +119,9 @@ Token *tokenize(char *p) {
     error_at(p, "トークナイズできません");
   }
   new_token(TK_EOF, cur, p);
+  // for (Token* t = head.next; t->kind != TK_EOF; t = t->next) {
+  //   fprintf(stderr, "%s\n", t->str);
+  // }
   return head.next;
 }
 
@@ -105,6 +131,12 @@ typedef enum {
   NK_SUB,
   NK_MUL,
   NK_DIV,
+  NK_EQ,
+  NK_NE,
+  NK_LT,
+  // NK_GT,
+  NK_LE,
+  // NK_GE,
   NK_NUM,
 } NodeKind;
 
@@ -135,40 +167,82 @@ Node *new_node_num(int val) {
 Node *expr();
 
 Node *primary() {
-  if (consume('(')) {
+  if (consume("(")) {
     Node *node = expr();
-    expect(')');
+    expect(")");
     return node;
   }
 
   return new_node_num(expect_number());
 }
 
+Node *unary() {
+	if (consume("+")) {
+		return primary();
+	}
+	if (consume("-")) {
+		return new_node(NK_SUB, new_node_num(0), primary());
+	}
+	return primary();
+}
+
 Node *mul() {
-  Node *node = primary();
+  Node *node = unary();
 
   while (true) {
-    if (consume('*')) {
-      node = new_node(NK_MUL, node, primary());
-    } else if (consume('/')) {
-      node = new_node(NK_DIV, node, primary());
+    if (consume("*")) {
+      node = new_node(NK_MUL, node, unary());
+    } else if (consume("/")) {
+      node = new_node(NK_DIV, node, unary());
     } else {
       return node;
     }
   }
 }
 
-Node *expr() {
+Node *add() {
   Node *node = mul();
   while (true) {
-    if (consume('+')) {
+    if (consume("+")) {
       node = new_node(NK_ADD, node, mul());
-    } else if (consume('-')) {
+    } else if (consume("-")) {
       node = new_node(NK_SUB, node, mul());
     } else {
       return node;
     }
   }
+}
+
+Node *relational() {
+  Node *node = add();
+  if (consume("<=")) {
+    return new_node(NK_LE, node, add());
+  }
+  if (consume(">=")) {
+    return new_node(NK_LE, add(), node);
+  }
+  if (consume("<")) {
+		return new_node(NK_LT, node, add());
+	}
+	if (consume(">")) {
+    return new_node(NK_LT, add(), node);
+  }
+  return node;
+}
+
+Node *equality() {
+  Node *node = relational();
+  if (consume("==")) {
+    return new_node(NK_EQ, node, add());
+  }
+  if (consume("!=")) {
+    return new_node(NK_NE, node, add());
+  }
+  return node;
+}
+
+Node *expr() {
+  return equality();
 }
 
 void gen(Node *node) {
@@ -196,6 +270,26 @@ void gen(Node *node) {
   case NK_DIV:
     printf("  cqo\n");
     printf("  idiv rdi\n");
+    break;
+  case NK_EQ:
+    printf("  cmp rax, rdi\n");
+    printf("  sete al\n");
+    printf("  movzx rax, al\n");
+    break;
+  case NK_NE:
+    printf("  cmp rax, rdi\n");
+    printf("  setne al\n");
+    printf("  movzx rax, al\n");
+    break;
+  case NK_LT:
+    printf("  cmp rax, rdi\n");
+    printf("  setl al\n");
+    printf("  movzx rax, al\n");
+    break;
+  case NK_LE:
+    printf("  cmp rax, rdi\n");
+    printf("  setle al\n");
+    printf("  movzx rax, al\n");
     break;
   default:
     break;
