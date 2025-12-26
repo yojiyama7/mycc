@@ -16,7 +16,7 @@ run: $(NAME)
 
 .PHONY: clean
 clean:
-	rm -f $(NAME) *.o *~ tmp*
+	rm -f $(NAME) *.o *~ *.out tmp*
 
 .PHONY: re
 re:
