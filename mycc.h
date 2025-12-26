@@ -48,6 +48,7 @@ typedef enum {
   NK_FOR,
   NK_WHILE,
   NK_BLOCK,
+  NK_CALL,
 } NodeKind;
 
 typedef struct s_Node Node;
@@ -65,6 +66,9 @@ struct s_Node {
   Node *inc;  // FOR
   Node *body; // FOR, WHILE, BLOCK
   Node *next; // BLOCK
+
+  char *func_name;   // CALL // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
+  int func_name_len; // CALL
 };
 
 extern Token *token;

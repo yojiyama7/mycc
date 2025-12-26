@@ -95,6 +95,10 @@ void gen(Node *node) {
       cur = cur->next;
     }
     return ;
+  case NK_CALL:
+    printf("  call %.*s\n", node->func_name_len, node->func_name);
+    printf("  push rax\n");
+    return; 
   default:
     break;
   }

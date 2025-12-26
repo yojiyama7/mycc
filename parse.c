@@ -181,6 +181,17 @@ Node *primary(void) {
   }
   Token *tok = consume_ident();
   if (tok) {
+    if (consume("(")) {
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = NK_CALL;
+      if (find_lvar(tok)) { // QUESTION: これっている？
+        error("ローカル変数を呼び出ししています");
+      }
+      node->func_name = tok->str;
+      node->func_name_len = tok->len;
+      expect(")");
+      return node;
+    }
     Node *node = calloc(1, sizeof(Node));
     node->kind = NK_LVAR;
 

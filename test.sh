@@ -18,6 +18,26 @@ assert() {
   fi
 }
 
+assert_with_asset() {
+
+  expected="$1"
+  input="$2"
+
+  ./mycc "$input" > tmp.s
+  cc -z noexecstack -c -o tmp.o tmp.s # -z noexecstack で何らかの警告を黙らせている
+  cc -c -o asset.o asset.c
+  cc -z noexecstack -o tmp tmp.o asset.o
+  ./tmp
+  actual="$?"
+
+  if [ "$actual" = "$expected" ]; then
+    echo "$input => $actual"
+  else
+    echo "$input => $expected expected, but got $actual"
+    exit 1
+  fi
+}
+
 # make && ./mycc "\
 # { return 42; }" > tmp.s
 # cc -z noexecstack -o tmp tmp.s
@@ -97,4 +117,6 @@ assert 32 "\
   b = a + 4;
   return a * b;
 }"
+assert_with_asset 42 "return foo();"
+assert_with_asset 0 "bar();"
 echo OK
