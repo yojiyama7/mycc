@@ -14,6 +14,16 @@ bool consume(char *op) {
   return true;
 }
 
+bool consume_keyword(char *op) {
+  if (token->kind != TK_RETURN ||
+      (int)strlen(op) != token->len ||
+      memcmp(op, token->str, token->len) != 0) {
+    return false;
+  }
+  token = token->next;
+  return true;
+}
+
 Token *consume_ident(void) {
   if (token->kind != TK_IDENT) {
     return NULL;
@@ -87,14 +97,19 @@ Token *tokenize(char *p) {
       p++;
       continue;
     }
-	if ('a' <= *p && *p <= 'z') {
-		cur = new_token(TK_IDENT, cur, p);
-    while ('a' <= *p && *p <= 'z') {
-      p++;
+    if ('a' <= *p && *p <= 'z') {
+      // IDENT or KEYWORD
+      cur = new_token(TK_IDENT, cur, p);
+      while ('a' <= *p && *p <= 'z') {
+        p++;
+      }
+      cur->len = p - cur->str;
+      // KEYWORD なら kind を上書き
+      if (cur->len == 6 && memcmp(cur->str, "return", 6) == 0) {
+        cur->kind = TK_RETURN;
+      }
+      continue;
     }
-		cur->len = p - cur->str;
-		continue;
-	}
     if (isdigit(*p)) {
       cur = new_token(TK_NUM, cur, p);
       cur->val = strtol(p, &p, 10);
@@ -257,9 +272,19 @@ Node *expr(void) {
 }
 
 Node *stmt(void) {
-  Node *node = assign();
+  Node *node;
+  
+  if (consume_keyword("return")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
 
-  expect(";");
+  if (!consume(";")) {
+    error_at(token->str, "';'ではないトークン");
+  }
 
   return node;
 }

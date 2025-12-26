@@ -18,7 +18,7 @@ assert() {
   fi
 }
 
-# make && ./mycc "aa = 42;" > tmp.s
+# make && ./mycc "return 42;" > tmp.s
 # cc -z noexecstack -o tmp tmp.s
 # ./tmp
 # echo $?
@@ -45,4 +45,7 @@ foo = 1;
 z = 1;
 z - foo + 42;"
 assert 14 "foo = 1; bar = 2; baz = 3; xxx = 4; baz * xxx + foo * bar;"
+assert 8 "return 8;"
+assert 8 "return 8;\
+return 4;"
 echo OK

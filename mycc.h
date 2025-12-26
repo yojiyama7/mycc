@@ -9,6 +9,7 @@
 
 typedef enum {
   TK_RESERVED,
+  TK_RETURN,
   TK_IDENT,
   TK_NUM,
   TK_EOF,
@@ -37,6 +38,7 @@ typedef enum {
   NK_ASSIGN,
   NK_LVAR,
   NK_NUM,
+  NK_RETURN,
 } NodeKind;
 
 typedef struct s_Node Node;
