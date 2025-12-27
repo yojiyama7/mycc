@@ -97,7 +97,8 @@ Token *tokenize(char *p) {
         *p == '=' ||
         *p == ';' ||
         *p == '{' ||
-        *p == '}' ) {
+        *p == '}' ||
+        *p == ',' ) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = 1;
       p++;
@@ -189,7 +190,18 @@ Node *primary(void) {
       }
       node->func_name = tok->str;
       node->func_name_len = tok->len;
-      expect(")");
+      Node head;
+      head.next = NULL;
+      Node *cur = &head;
+      while (!consume(")")) {
+        cur->next = expr();
+        if (!consume(",")) {
+          expect(")");
+          break;
+        }
+        cur = cur->next;
+      }
+      node->args = head.next;
       return node;
     }
     Node *node = calloc(1, sizeof(Node));
@@ -344,6 +356,7 @@ Node *stmt(void) {
     node = calloc(1, sizeof(Node));
     node->kind = NK_BLOCK;
     Node head;
+    head.next = NULL;
     Node *cur = &head;
     while (!consume("}")) {
       cur->next = stmt();

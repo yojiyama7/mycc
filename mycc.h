@@ -65,10 +65,11 @@ struct s_Node {
   Node *init; // FOR
   Node *inc;  // FOR
   Node *body; // FOR, WHILE, BLOCK
-  Node *next; // BLOCK
-
   char *func_name;   // CALL // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
   int func_name_len; // CALL
+  Node *args;        // CALL
+
+  Node *next; // BLOCK, CALL
 };
 
 extern Token *token;

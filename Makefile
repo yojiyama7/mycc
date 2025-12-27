@@ -16,7 +16,12 @@ run: $(NAME)
 
 .PHONY: clean
 clean:
-	rm -f $(NAME) *.o objs/* *.out *~ tmp*
+	rm -f *.o objs/* *.out *~ tmp*
+
+.PHONY: fclean
+fclean:
+	$(MAKE) clean
+	rm -f $(NAME)
 
 .PHONY: re
 re:
@@ -26,6 +31,7 @@ re:
 .PHONY: test
 test: $(NAME)
 	./test.sh
+	@$(MAKE) --silent clean
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LDFLAGS)
