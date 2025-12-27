@@ -15,6 +15,8 @@ void gen_lval(Node *node) {
 
 void gen(Node *node) {
   int sid;
+  Node *cur;
+
   switch (node->kind) {
   case NK_NUM:
     printf("  push %d\n", node->val);
@@ -88,7 +90,7 @@ void gen(Node *node) {
     printf(".Lend%d:\n", sid);
     return ;
   case NK_BLOCK:
-    Node *cur = node->body;
+    cur = node->body;
     while (cur) {
       gen(cur);
       printf("  pop rax\n");
@@ -96,7 +98,24 @@ void gen(Node *node) {
     }
     return ;
   case NK_CALL:
+    char *regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+    int i = 0;
+    int stack_bytes = 8;
+    cur = node->args;
+    while (cur && i < 6) {
+      gen(cur);                      // stack_bytes += 8
+      printf("  pop %s\n", regs[i]); // stack_bytes -= 8
+      cur = cur->next;
+      i++;
+    }
+    // 長さ6超過
+    if (cur) {
+      error("引数が6つ超過あります");
+    }
+    int rsp_offset = 16 - (stack_bytes % 16);
+    printf("  sub rsp, %d\n", rsp_offset);
     printf("  call %.*s\n", node->func_name_len, node->func_name);
+    printf("  add rsp, %d\n", rsp_offset);
     printf("  push rax\n");
     return; 
   default:

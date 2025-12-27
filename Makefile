@@ -5,7 +5,7 @@ NAME := mycc
 SRCS := main.c \
         parse.c \
         codegen.c
-OBJS := $(SRCS:.c=.o)
+OBJS := $(addprefix objs/, $(SRCS:.c=.o))
 
 .PHONY: all
 all: $(NAME)
@@ -16,7 +16,12 @@ run: $(NAME)
 
 .PHONY: clean
 clean:
-	rm -f $(NAME) *.o *~ *.out tmp*
+	rm -f *.o objs/* *.out *~ tmp*
+
+.PHONY: fclean
+fclean:
+	$(MAKE) clean
+	rm -f $(NAME)
 
 .PHONY: re
 re:
@@ -26,11 +31,13 @@ re:
 .PHONY: test
 test: $(NAME)
 	./test.sh
+	@$(MAKE) --silent clean
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LDFLAGS)
 
 $(OBJS): mycc.h
 
-%.o: %.c
+objs/%.o: %.c
+	mkdir -p objs
 	$(CC) $(CFLAGS) -o $@ -c $<
