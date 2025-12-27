@@ -1,5 +1,5 @@
+.DS_Store
 *~
 *.o
+*.out
 tmp*
-a.out
-9cc

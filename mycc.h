@@ -10,6 +10,10 @@
 typedef enum {
   TK_RESERVED,
   TK_RETURN,
+  TK_IF,
+  TK_ELSE,
+  TK_FOR,
+  TK_WHILE,
   TK_IDENT,
   TK_NUM,
   TK_EOF,
@@ -39,6 +43,12 @@ typedef enum {
   NK_LVAR,
   NK_NUM,
   NK_RETURN,
+  NK_IF,
+  NK_IFELSE,
+  NK_FOR,
+  NK_WHILE,
+  NK_BLOCK,
+  NK_CALL,
 } NodeKind;
 
 typedef struct s_Node Node;
@@ -48,6 +58,17 @@ struct s_Node {
   Node *rhs;
   int val;    // kindがND_NUMの場合のみ使う
   int offset; // kindがND_LVARの場合のみ使う
+
+  Node *cond; // IF, IFELSE, FOR, WHILE
+  Node *then; // IF, IFELSE
+  Node *els;  // IFELSE
+  Node *init; // FOR
+  Node *inc;  // FOR
+  Node *body; // FOR, WHILE, BLOCK
+  Node *next; // BLOCK
+
+  char *func_name;   // CALL // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
+  int func_name_len; // CALL
 };
 
 extern Token *token;

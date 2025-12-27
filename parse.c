@@ -15,7 +15,11 @@ bool consume(char *op) {
 }
 
 bool consume_keyword(char *op) {
-  if (token->kind != TK_RETURN ||
+  if (!(token->kind == TK_RETURN ||
+      token->kind == TK_IF ||
+      token->kind == TK_ELSE ||
+      token->kind == TK_FOR ||
+      token->kind == TK_WHILE) ||
       (int)strlen(op) != token->len ||
       memcmp(op, token->str, token->len) != 0) {
     return false;
@@ -91,22 +95,32 @@ Token *tokenize(char *p) {
         *p == '<' ||
         *p == '>' ||
         *p == '=' ||
-        *p == ';' ) {
+        *p == ';' ||
+        *p == '{' ||
+        *p == '}' ) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = 1;
       p++;
       continue;
     }
-    if ('a' <= *p && *p <= 'z') {
+    if (isalpha(*p) || *p == '_') {
       // IDENT or KEYWORD
       cur = new_token(TK_IDENT, cur, p);
-      while ('a' <= *p && *p <= 'z') {
+      while (isalnum(*p) || *p == '_') {
         p++;
       }
       cur->len = p - cur->str;
       // KEYWORD なら kind を上書き
       if (cur->len == 6 && memcmp(cur->str, "return", 6) == 0) {
         cur->kind = TK_RETURN;
+      } else if (cur->len == 2 && memcmp(cur->str, "if", 2) == 0) {
+        cur->kind = TK_IF;
+      } else if (cur->len == 4 && memcmp(cur->str, "else", 4) == 0) {
+        cur->kind = TK_ELSE;
+      } else if (cur->len == 3 && memcmp(cur->str, "for", 3) == 0) {
+        cur->kind = TK_FOR;
+      } else if (cur->len == 5 && memcmp(cur->str, "while", 5) == 0) {
+        cur->kind = TK_WHILE;
       }
       continue;
     }
@@ -167,6 +181,17 @@ Node *primary(void) {
   }
   Token *tok = consume_ident();
   if (tok) {
+    if (consume("(")) {
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = NK_CALL;
+      if (find_lvar(tok)) { // QUESTION: これっている？
+        error("ローカル変数を呼び出ししています");
+      }
+      node->func_name = tok->str;
+      node->func_name_len = tok->len;
+      expect(")");
+      return node;
+    }
     Node *node = calloc(1, sizeof(Node));
     node->kind = NK_LVAR;
 
@@ -274,18 +299,69 @@ Node *expr(void) {
 Node *stmt(void) {
   Node *node;
   
+  // IF, IFELSE
+  if (consume_keyword("if")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_IF;
+    expect("(");
+    node->cond = expr();
+    expect(")");
+    node->then = stmt();
+    // IFELSE
+    if (consume_keyword("else")) {
+      node->kind = NK_IFELSE;
+      node->els = stmt();
+    }
+    return node;
+  }
+  if (consume_keyword("while")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_WHILE;
+    expect("(");
+    node->cond = expr();
+    expect(")");
+    node->body = stmt();
+    return node;
+  }
+  if (consume_keyword("for")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_FOR;
+    expect("(");
+    if (!consume(";")) {
+      node->init = expr();
+      expect(";");
+    }
+    if (!consume(";")) {
+      node->cond = expr();
+      expect(";");
+    }
+    node->inc = expr();
+    expect(")");
+    node->body = stmt();
+    return node;
+  }
+  if (consume("{")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_BLOCK;
+    Node head;
+    Node *cur = &head;
+    while (!consume("}")) {
+      cur->next = stmt();
+      cur = cur->next;
+    }
+    node->body = head.next;
+    return node;
+  }
+
   if (consume_keyword("return")) {
+    // RETURN
     node = calloc(1, sizeof(Node));
     node->kind = NK_RETURN;
     node->lhs = expr();
   } else {
     node = expr();
   }
-
-  if (!consume(";")) {
-    error_at(token->str, "';'ではないトークン");
-  }
-
+  expect(";");
   return node;
 }
 
