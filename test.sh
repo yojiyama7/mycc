@@ -170,12 +170,12 @@ foo(a) {
 }"
 assert 120 "\
 main() {
-  return frac(5);
+  return fact(5);
 }
-frac(a) {
+fact(a) {
   if (a == 0)
     return 1;
-  return a * frac(a - 1);
+  return a * fact(a - 1);
 }"
 assert 233 "\
 main() {
