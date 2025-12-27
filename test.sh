@@ -48,4 +48,5 @@ assert 14 "foo = 1; bar = 2; baz = 3; xxx = 4; baz * xxx + foo * bar;"
 assert 8 "return 8;"
 assert 8 "return 8;\
 return 4;"
+
 echo OK
