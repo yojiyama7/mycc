@@ -1,5 +1,6 @@
 #include "mycc.h"
 
+char *param_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 int stmt_id;
 
 // nodeの持つoffsetが指し示す変数のアドレスをスタックにpushする
@@ -37,21 +38,27 @@ void gen(Node *node) {
     printf("  mov [rax], rdi\n");
     printf("  push rdi\n"); // 代入式は右辺値と同じ値として評価される
     return;
+  case NK_EXPRSTMT:
+    gen(node->body);
+    printf("  pop rax\n");
+    return ;
   case NK_RETURN:
+    printf("# >>> NK_RETURN\n");
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
-    printf("  ret\n");
+    printf("  ret # <<< NK_RETURN\n");
     return ;
   case NK_IF:
     sid = stmt_id++;
+    printf("# <<< NK_IF%d\n", sid);
     gen(node->cond);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
     printf("  je .Lend%d\n", sid);
     gen(node->then);
-    printf(".Lend%d:\n", sid);
+    printf(".Lend%d: # <<< NK_IF%d\n", sid, sid);
     return ;
   case NK_IFELSE:
     sid = stmt_id++;
@@ -93,18 +100,16 @@ void gen(Node *node) {
     cur = node->body;
     while (cur) {
       gen(cur);
-      printf("  pop rax\n");
       cur = cur->next;
     }
     return ;
   case NK_CALL:
-    char *regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
     int i = 0;
     int stack_bytes = 8;
     cur = node->args;
     while (cur && i < 6) {
       gen(cur);                      // stack_bytes += 8
-      printf("  pop %s\n", regs[i]); // stack_bytes -= 8
+      printf("  pop %s\n", param_regs[i]); // stack_bytes -= 8
       cur = cur->next;
       i++;
     }

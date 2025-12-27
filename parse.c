@@ -2,6 +2,7 @@
 
 Token *token;
 char *user_input;
+Node *cur_funcdef;
 Node *code[100];
 
 bool consume(char *op) {
@@ -44,6 +45,15 @@ void expect(char *op) {
     error_at(token->str, "'%s'ではありません", op);
   }
   token = token->next;
+}
+
+Token *expect_ident() {
+  if (token->kind != TK_IDENT) {
+    error_at(token->str, "識別子ではありません");
+  }
+  Token *ident = token;
+  token = token->next;
+  return ident;
 }
 
 int expect_number(void) {
@@ -155,18 +165,8 @@ Node *new_node_num(int val) {
   return node;
 }
 
-typedef struct s_LVar LVar;
-struct s_LVar {
-  LVar *next;
-  char *name;
-  int len;
-  int offset;
-};
-
-LVar *locals;
-
 LVar *find_lvar(Token *tok) {
-  for (LVar *var = locals; var; var = var->next) {
+  for (LVar *var = cur_funcdef->locals; var; var = var->next) {
     if (var->len == tok->len && memcmp(tok->str, var->name, var->len) == 0) {
       return var;
     }
@@ -212,16 +212,16 @@ Node *primary(void) {
       node->offset = lvar->offset;
     } else {
       lvar = calloc(1, sizeof(LVar));
-      lvar->next = locals;
+      lvar->next = cur_funcdef->locals;
       lvar->name = tok->str;
       lvar->len = tok->len;
-      if (locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-        lvar->offset = 0;
+      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+        lvar->offset = 8;
       } else {
-        lvar->offset = locals->offset + 8;
+        lvar->offset = cur_funcdef->locals->offset + 8;
       }
       node->offset = lvar->offset;
-      locals = lvar;
+      cur_funcdef->locals = lvar;
     }
     return node;
   }
@@ -372,9 +372,60 @@ Node *stmt(void) {
     node->kind = NK_RETURN;
     node->lhs = expr();
   } else {
-    node = expr();
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_EXPRSTMT;
+    node->body = expr();
   }
   expect(";");
+  return node;
+}
+
+// 再起的に呼ばれることはないと仮定
+Node *funcdef(void) {
+  Token *ident = consume_ident(); // expect_ident
+  if (!ident) {
+    error_at(token->str, "関数名ではありません");
+  }
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = NK_FUNCDEF;
+  node->func_name = ident->str;
+  node->func_name_len = ident->len;
+  cur_funcdef = node; // 再起的に呼ばれないので問題ない
+  expect("(");
+  Node head;
+  head.next = NULL;
+  Node *cur = &head;
+  int i = 0;
+  while (!consume(")") && i < 6) {
+    Token *ident = expect_ident();
+    LVar *lvar = find_lvar(ident);
+    if (lvar) {
+      error_at(ident->str, "同名の引数があります");
+    } else {
+      lvar = calloc(1, sizeof(LVar));
+      lvar->next = cur_funcdef->locals;
+      lvar->name = ident->str;
+      lvar->len = ident->len;
+      lvar->reg = param_regs[i];
+      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+        lvar->offset = 8;
+      } else {
+        lvar->offset = cur_funcdef->locals->offset + 8;
+      }
+      node->offset = lvar->offset;
+      cur_funcdef->locals = lvar;
+    }
+    if (!consume(",")) {
+      expect(")");
+      break;
+    }
+    cur = cur->next;
+    i++;
+  }
+  if (i == 6) {
+    error_at(token->str, "引数が6つ超過あります");
+  }
+  node->body = stmt();
   return node;
 }
 
@@ -382,7 +433,7 @@ void program(void) {
   int i = 0;
   
   while (!at_eof()) {
-    code[i++] = stmt();
+    code[i++] = funcdef();
     if (i >= 100) {
       error_at(token->str, "コードが多すぎます");
     }

@@ -33,21 +33,40 @@ int main(int argc, char **argv) {
 
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");
-  printf("main:\n");
-
-  // プロローグ
-  printf("  push rbp\n"); // rpbの保持
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n"); // rbpから208バイト分(8 * 26)関数フレームを拡大する
 
   for (int i = 0; code[i]; i++) {
-    gen(code[i]);
-    printf("  pop rax\n"); // [^1] 最後のstmtに対してpopした値が返り値になる
+    // fprintf(stderr, "%.*s:\n", code[i]->func_name_len, code[i]->func_name);
+    printf("%.*s:\n", code[i]->func_name_len, code[i]->func_name);
+
+    // プロローグ
+    // int frame_bytes = 0;
+    
+    printf("  push rbp\n"); // rpbの保持
+    printf("  mov rbp, rsp\n");
+    if (code[i]->locals) {
+      printf("  sub rsp, %d\n", code[i]->locals->offset);
+    }
+    LVar *lcur = code[i]->locals;
+    while (lcur) {
+      printf("  # ローカル変数名: %.*s\n", lcur->len, lcur->name);
+      if (lcur->reg) {
+        printf("  mov rax, rbp\n");
+        printf("  sub rax, %d\n", lcur->offset);
+        printf("  mov [rax], %s\n", lcur->reg);
+      }
+      lcur = lcur->next;
+    }
+    printf("  # vvv\n");
+
+    gen(code[i]->body);
+
+    // エピローグ
+    printf("  # ^^^\n");
+    printf("  mov rsp, rbp\n"); // 関数フレーム(or stack)をrbpの示すアドレスまで縮小
+    printf("  pop rbp\n");
+    printf("  mov rax, 0\n"); // 明示がなければ0を返す
+    printf("  ret\n");
   }
 
-  // エピローグ
-  printf("  mov rsp, rbp\n"); // 関数フレーム(or stack)をrbpの示すアドレスまで縮小
-  printf("  pop rbp\n");
-  printf("  ret\n"); // ^1でpopした値が返る
 	return 0;
 }

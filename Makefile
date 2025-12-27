@@ -31,7 +31,7 @@ re:
 .PHONY: test
 test: $(NAME)
 	./test.sh
-	@$(MAKE) --silent clean
+#	@$(MAKE) --silent clean
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LDFLAGS)
