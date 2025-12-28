@@ -410,6 +410,9 @@ Node *stmt(void) {
 
 // 再起的に呼ばれることはないと仮定
 Node *funcdef(void) {
+  if (!consume_keyword("int")) {
+    error("関数定義のための'int'がありません");
+  }
   Token *ident = consume_ident(); // expect_ident
   if (!ident) {
     error_at(token->str, "関数名ではありません");
@@ -426,7 +429,7 @@ Node *funcdef(void) {
   int i = 0;
   while (!consume(")") && i < 6) {
     if (!consume_keyword("int")) {
-      error("宣言のための'int'がありません");
+      error("引数宣言のための'int'がありません");
     }
     Token *ident = expect_ident();
     LVar *lvar = find_lvar(ident);

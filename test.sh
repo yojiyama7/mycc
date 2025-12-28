@@ -19,7 +19,7 @@ assert() {
 assert_expr() {
   expected="$1"
   input="$2"
-  ./mycc "main() { return $input; }" > tmp.s
+  ./mycc "int main() { return $input; }" > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
   ./tmp
   actual="$?"
@@ -35,7 +35,7 @@ assert_expr() {
 assert_stmts() {
   expected="$1"
   input="$2"
-  ./mycc "main() { $input }" > tmp.s
+  ./mycc "int main() { $input }" > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
   ./tmp
   actual="$?"
@@ -71,7 +71,7 @@ assert_expr_with_asset() {
   expected="$1"
   input="$2"
 
-  ./mycc "main() { return $input; }" > tmp.s
+  ./mycc "int main() { return $input; }" > tmp.s
   cc -z noexecstack -c -o tmp.o tmp.s # -z noexecstack で何らかの警告を黙らせている
   cc -c -o asset.o asset.c
   cc -z noexecstack -o tmp tmp.o asset.o
@@ -180,30 +180,30 @@ assert_expr_with_asset 0 "bar()"
 assert_expr_with_asset 3 "mod4(7)"
 assert_expr_with_asset 0 "potato(1, 2, 3, 4, 5, 6) - 321"
 assert 42 "\
-main() {
+int main() {
   return 42;
 }"
 assert 23 "\
-main() {
+int main() {
   return foo(23);
 }
-foo(int a) {
+int foo(int a) {
   return a;
 }"
 assert 120 "\
-main() {
+int main() {
   return fact(5);
 }
-fact(int a) {
+int fact(int a) {
   if (a == 0)
     return 1;
   return a * fact(a - 1);
 }"
 assert 233 "\
-main() {
+int main() {
   return fib(13);
 }
-fib(int a) {
+int fib(int a) {
   if (a == 0)
     return 0;
   if (a == 1)
@@ -211,7 +211,7 @@ fib(int a) {
   return fib(a-1) + fib(a-2);
 }"
 assert_with_asset 10 "\
-main() {
+int main() {
   int a; int b;
   a = 10;
   b = &a;
