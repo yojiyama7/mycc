@@ -15,6 +15,7 @@ typedef enum {
   TK_FOR,
   TK_WHILE,
   TK_IDENT,
+  TK_INT,
   TK_NUM,
   TK_EOF,
 } TokenKind;
@@ -46,6 +47,7 @@ typedef enum {
   NK_ADDR,
   NK_EXPRSTMT,
   NK_RETURN,
+  NK_VARDEF,
   NK_IF,
   NK_IFELSE,
   NK_FOR,
@@ -71,7 +73,7 @@ struct s_Node {
   Node *lhs;
   Node *rhs;
   int val;    // kindがNK_NUMの場合のみ使う
-  int offset; // kindがNK_LVARの場合のみ使う
+  int offset; // NK_LVAR
 
   Node *cond; // IF, IFELSE, FOR, WHILE
   Node *then; // IF, IFELSE

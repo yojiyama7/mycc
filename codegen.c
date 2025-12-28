@@ -59,6 +59,8 @@ void gen(Node *node) {
     printf("  pop rbp\n");
     printf("  ret # <<< NK_RETURN\n");
     return ;
+  case NK_VARDEF:
+    return;
   case NK_IF:
     sid = stmt_id++;
     printf("# <<< NK_IF%d\n", sid);
@@ -114,11 +116,10 @@ void gen(Node *node) {
     return ;
   case NK_CALL:
     int i = 0;
-    int stack_bytes = 8;
     cur = node->args;
     while (cur && i < 6) {
-      gen(cur);                      // stack_bytes += 8
-      printf("  pop %s\n", param_regs[i]); // stack_bytes -= 8
+      gen(cur);
+      printf("  pop %s\n", param_regs[i]);
       cur = cur->next;
       i++;
     }
@@ -126,12 +127,14 @@ void gen(Node *node) {
     if (cur) {
       error("引数が6つ超過あります");
     }
-    int rsp_offset = 16 - (stack_bytes % 16);
-    printf("  sub rsp, %d\n", rsp_offset);
+    printf("  push rbp\n");     // XXX: rbpをスタックに積んで
+    printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
+    printf("  and rsp, -16\n");
     printf("  call %.*s\n", node->func_name_len, node->func_name);
-    printf("  add rsp, %d\n", rsp_offset);
+    printf("  mov rsp, rbp\n"); // rspを復元して
+	  printf("  pop rbp\n");      // rbpを復元
     printf("  push rax\n");
-    return; 
+    return;
   default:
     break;
   }

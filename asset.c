@@ -21,6 +21,9 @@ void putnum(int a) {
   printf("%u\n", a);
 }
 
+int putnum(int a) {
+  return printf("%u\n", a);
+}
 // int fizzbuzz(int i) {
 //   if (i % 15 == 0)
 //     printf("fizzbuzz");
