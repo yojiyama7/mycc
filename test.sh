@@ -32,12 +32,29 @@ assert_expr() {
   fi
 }
 
-
 assert_stmts() {
   expected="$1"
   input="$2"
   ./mycc "main() { $input }" > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
+  ./tmp
+  actual="$?"
+
+  if [ "$actual" = "$expected" ]; then
+    echo "$input => $actual"
+  else
+    echo "$input => $expected expected, but got $actual"
+    exit 1
+  fi
+}
+
+assert_with_asset() {
+  expected="$1"
+  input="$2"
+  ./mycc "$input" > tmp.s
+  cc -z noexecstack -c -o tmp.o tmp.s # -z noexecstack で何らかの警告を黙らせている
+  cc -c -o asset.o asset.c
+  cc -z noexecstack -o tmp tmp.o asset.o
   ./tmp
   actual="$?"
 
@@ -187,6 +204,13 @@ fib(a) {
   if (a == 1)
     return 1;
   return fib(a-1) + fib(a-2);
+}"
+assert_with_asset 10 "\
+main() {
+  a = 10;
+  b = &a;
+  putnum(b);
+  return *b;
 }"
 
 echo OK

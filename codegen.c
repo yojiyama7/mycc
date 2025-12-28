@@ -38,6 +38,15 @@ void gen(Node *node) {
     printf("  mov [rax], rdi\n");
     printf("  push rdi\n"); // 代入式は右辺値と同じ値として評価される
     return;
+  case NK_ADDR:
+    gen_lval(node->lhs);
+    return;
+  case NK_DEREF:
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
   case NK_EXPRSTMT:
     gen(node->body);
     printf("  pop rax\n");
@@ -116,12 +125,12 @@ void gen(Node *node) {
     if (cur) {
       error("引数が6つ超過あります");
     }
-	printf("  push rbp\n");     // XXX: rbpをスタックに積んで
-	printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
+    printf("  push rbp\n");     // XXX: rbpをスタックに積んで
+    printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
     printf("  and rsp, -16\n");
     printf("  call %.*s\n", node->func_name_len, node->func_name);
     printf("  mov rsp, rbp\n"); // rspを復元して
-	printf("  pop rbp\n");      // rbpを復元
+	  printf("  pop rbp\n");      // rbpを復元
     printf("  push rax\n");
     return;
   default:

@@ -108,7 +108,8 @@ Token *tokenize(char *p) {
         *p == ';' ||
         *p == '{' ||
         *p == '}' ||
-        *p == ',' ) {
+        *p == ',' ||
+        *p == '&' ) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = 1;
       p++;
@@ -236,6 +237,12 @@ Node *unary(void) {
 	if (consume("-")) {
 		return new_node(NK_SUB, new_node_num(0), primary());
 	}
+  if (consume("*")) {
+    return new_node(NK_DEREF, unary(), NULL);
+  }
+  if (consume("&")) {
+    return new_node(NK_ADDR, unary(), NULL);
+  }
 	return primary();
 }
 

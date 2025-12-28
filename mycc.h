@@ -42,6 +42,8 @@ typedef enum {
   NK_ASSIGN,
   NK_LVAR,
   NK_NUM,
+  NK_DEREF,
+  NK_ADDR,
   NK_EXPRSTMT,
   NK_RETURN,
   NK_IF,
