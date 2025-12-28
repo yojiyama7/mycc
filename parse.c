@@ -425,6 +425,9 @@ Node *funcdef(void) {
   Node *cur = &head;
   int i = 0;
   while (!consume(")") && i < 6) {
+    if (!consume_keyword("int")) {
+      error("宣言のための'int'がありません");
+    }
     Token *ident = expect_ident();
     LVar *lvar = find_lvar(ident);
     if (lvar) {

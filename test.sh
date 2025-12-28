@@ -187,14 +187,14 @@ assert 23 "\
 main() {
   return foo(23);
 }
-foo(a) {
+foo(int a) {
   return a;
 }"
 assert 120 "\
 main() {
   return fact(5);
 }
-fact(a) {
+fact(int a) {
   if (a == 0)
     return 1;
   return a * fact(a - 1);
@@ -203,7 +203,7 @@ assert 233 "\
 main() {
   return fib(13);
 }
-fib(a) {
+fib(int a) {
   if (a == 0)
     return 0;
   if (a == 1)
