@@ -38,6 +38,15 @@ void gen(Node *node) {
     printf("  mov [rax], rdi\n");
     printf("  push rdi\n"); // 代入式は右辺値と同じ値として評価される
     return;
+  case NK_ADDR:
+    gen_lval(node->lhs);
+    return;
+  case NK_DEREF:
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
   case NK_EXPRSTMT:
     gen(node->body);
     printf("  pop rax\n");
