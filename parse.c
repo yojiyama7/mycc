@@ -20,7 +20,8 @@ bool consume_keyword(char *op) {
       token->kind == TK_IF ||
       token->kind == TK_ELSE ||
       token->kind == TK_FOR ||
-      token->kind == TK_WHILE) ||
+      token->kind == TK_WHILE ||
+      token->kind == TK_INT ) ||
       (int)strlen(op) != token->len ||
       memcmp(op, token->str, token->len) != 0) {
     return false;
@@ -133,6 +134,8 @@ Token *tokenize(char *p) {
         cur->kind = TK_FOR;
       } else if (cur->len == 5 && memcmp(cur->str, "while", 5) == 0) {
         cur->kind = TK_WHILE;
+      } else if (cur->len == 3 && memcmp(cur->str, "int", 3) == 0) {
+        cur->kind = TK_INT;
       }
       continue;
     }
@@ -212,17 +215,18 @@ Node *primary(void) {
     if (lvar) {
       node->offset = lvar->offset;
     } else {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = cur_funcdef->locals;
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-        lvar->offset = 8;
-      } else {
-        lvar->offset = cur_funcdef->locals->offset + 8;
-      }
-      node->offset = lvar->offset;
-      cur_funcdef->locals = lvar;
+      error("定義されていない変数です");
+      // lvar = calloc(1, sizeof(LVar));
+      // lvar->next = cur_funcdef->locals;
+      // lvar->name = tok->str;
+      // lvar->len = tok->len;
+      // if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+      //   lvar->offset = 8;
+      // } else {
+      //   lvar->offset = cur_funcdef->locals->offset + 8;
+      // }
+      // node->offset = lvar->offset;
+      // cur_funcdef->locals = lvar;
     }
     return node;
   }
@@ -317,7 +321,7 @@ Node *expr(void) {
 
 Node *stmt(void) {
   Node *node;
-  
+
   // IF, IFELSE
   if (consume_keyword("if")) {
     node = calloc(1, sizeof(Node));
@@ -373,7 +377,24 @@ Node *stmt(void) {
     return node;
   }
 
-  if (consume_keyword("return")) {
+  if (consume_keyword("int")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = NK_VARDEF;
+    Token *tok = expect_ident();
+    if (find_lvar(tok)) {
+      error("既に定義された変数名です");
+    }
+    LVar *lvar = calloc(1, sizeof(LVar));
+    lvar->next = cur_funcdef->locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+      lvar->offset = 8;
+    } else {
+      lvar->offset = cur_funcdef->locals->offset + 8;
+    }
+    cur_funcdef->locals = lvar;
+  } else if (consume_keyword("return")) {
     // RETURN
     node = calloc(1, sizeof(Node));
     node->kind = NK_RETURN;

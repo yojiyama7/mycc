@@ -59,6 +59,8 @@ void gen(Node *node) {
     printf("  pop rbp\n");
     printf("  ret # <<< NK_RETURN\n");
     return ;
+  case NK_VARDEF:
+    return;
   case NK_IF:
     sid = stmt_id++;
     printf("# <<< NK_IF%d\n", sid);

@@ -114,13 +114,15 @@ assert_expr 1 "5 > 3"
 assert_expr 1 "5 >= 3"
 assert_expr 0 "5 <= 3"
 assert_expr 1 "(0 == (0 + 3)) == 0"
-assert_expr 3 "a = 3"
-assert_stmts 30 "a = 3; b = 5; return (a + 3) * b;"
+# assert_expr 3 "a = 3"
+assert_stmts 30 "int a; int b; a = 3; b = 5; return (a + 3) * b;"
 assert_stmts 42 "\
+int foo; int z;
 foo = 1;
 z = 1;
 return z - foo + 42;"
-assert_stmts 14 "foo = 1; bar = 2; baz = 3; xxx = 4; return baz * xxx + foo * bar;"
+assert_stmts 14 "int foo; int bar; int baz; int xxx;\
+foo = 1; bar = 2; baz = 3; xxx = 4; return baz * xxx + foo * bar;"
 assert_stmts 8 "return 8;"
 assert_stmts 8 "return 8;\
 return 4;"
@@ -153,12 +155,14 @@ if (1 != 0)
 else
   return 5;"
 assert_stmts 55 "\
+int a; int b;
 a = 0;
 b = 0;
 while (a < 10)
   b = b + (a = a + 1);
 return b;"
 assert_stmts 6 "\
+int i;
 for (i = 0; i < 10; i = i + 1)
   if (i * i > 30)
     return i;
@@ -166,6 +170,7 @@ return 42;"
 assert_stmts 42 "{ return 42; }"
 assert_stmts 32 "\
 {
+  int a; int b;
   a = 4;
   b = a + 4;
   return a * b;
@@ -207,6 +212,7 @@ fib(a) {
 }"
 assert_with_asset 10 "\
 main() {
+  int a; int b;
   a = 10;
   b = &a;
   putnum(b);
