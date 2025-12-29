@@ -189,6 +189,7 @@ Node *primary(void) {
   }
   Token *tok = consume_ident();
   if (tok) {
+    // CALL
     if (consume("(")) {
       Node *node = calloc(1, sizeof(Node));
       node->kind = ND_CALL;
@@ -211,26 +212,17 @@ Node *primary(void) {
       node->args = head.next;
       return node;
     }
+    // LVAR
     Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
+    node->kind = ND_LVAR; 
 
     LVar *lvar = find_lvar(tok);
     if (lvar) {
       node->offset = lvar->offset;
     } else {
       error("定義されていない変数です");
-      // lvar = calloc(1, sizeof(LVar));
-      // lvar->next = cur_funcdef->locals;
-      // lvar->name = tok->str;
-      // lvar->len = tok->len;
-      // if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-      //   lvar->offset = 8;
-      // } else {
-      //   lvar->offset = cur_funcdef->locals->offset + 8;
-      // }
-      // node->offset = lvar->offset;
-      // cur_funcdef->locals = lvar;
     }
+    node->type = lvar->type;
     return node;
   }
 
@@ -269,9 +261,19 @@ Node *mul(void) {
 
 Node *add(void) {
   Node *node = mul();
+
   while (true) {
     if (consume("+")) {
       node = new_node(ND_ADD, node, mul());
+      // // XXX: ここでやるべきかどうかわからん
+      add_type(node);
+      if (node->type->ptr_to) {
+        int size = 4; // ptr to INT
+        if (node->lhs->type->ptr_to->ptr_to) {
+          size = 8; // ptr to ptr
+        }
+        node->rhs = new_node(ND_MUL, node->rhs, new_node_num(size)); 
+      }
     } else if (consume("-")) {
       node = new_node(ND_SUB, node, mul());
     } else {
@@ -325,20 +327,15 @@ Node *expr(void) {
 Type *try_type(void) {
   Token *tok = consume_type();
   if (tok) {
-    Type *type = calloc(1, sizeof(Type));
-    if (tok->kind == TK_INT) {
-      type->type = INT;
-    } else {
-      error("不正な型です");
-    }
-    Type *cur = type;
+    Type *cur = ty_int;
     while (consume("*")) {
+      // fprintf(stderr, "PTR!!!\n");
       Type *ptr = calloc(1, sizeof(Type));
-      ptr->type = PTR;
+      ptr->core = PTR;
       ptr->ptr_to = cur;
       cur = ptr;
     }
-    return type;
+    return cur;
   }
   return NULL;
 }
@@ -413,6 +410,14 @@ Node *stmt(void) {
     LVar *lvar = calloc(1, sizeof(LVar));
     lvar->next = cur_funcdef->locals;
     lvar->type = type;
+    // for (Type *t = type; t; t = t->ptr_to) {
+    //   if (t->core == INT) {
+    //     fprintf(stderr, "int\n");
+    //     break;
+    //   } else {
+    //     fprintf(stderr, "ptr to ");
+    //   }
+    // }
     lvar->name = tok->str;
     lvar->len = tok->len;
     node->defined_var = lvar;

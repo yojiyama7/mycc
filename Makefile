@@ -1,3 +1,5 @@
+MAKEFLAGS := -rR
+
 CC      := cc
 CFLAGS  := -std=c11 -Wall -Wextra -Werror -Wimplicit-fallthrough -g -static
 LDFLAGS := 
@@ -5,7 +7,7 @@ NAME := mycc
 SRCS := main.c \
         parse.c \
 				type.c \
-        codegen.c \
+        codegen.c
 OBJS := $(addprefix objs/, $(SRCS:.c=.o))
 
 .PHONY: all

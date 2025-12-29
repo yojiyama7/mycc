@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int foo(void) {
   return 42;
@@ -20,6 +21,18 @@ int potato(int a, int b, int c, int d, int e, int f) {
 int putnum(int a) {
   return printf("%u\n", a);
 }
+
+int *alloc5(int a, int b, int c, int d, int e) {
+  int *m = calloc(5, sizeof(int));
+
+  m[0] = a;
+  m[1] = b;
+  m[2] = c;
+  m[3] = d;
+  m[4] = e;
+  return m;
+}
+
 // int fizzbuzz(int i) {
 //   if (i % 15 == 0)
 //     printf("fizzbuzz");

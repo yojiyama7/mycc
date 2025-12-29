@@ -66,16 +66,13 @@ typedef enum {
   ND_FUNCDEF,
 } NodeKind;
 
-typedef enum {
-  TY_INT,
-  TY_PTR,
-} TypeKind;
-
 typedef struct s_Type Type;
 struct s_Type {
-  TypeKind type;
+  enum { INT, PTR } core;
   Type *ptr_to;
 };
+
+extern Type *ty_int;
 
 typedef struct s_LVar LVar;
 struct s_LVar {
@@ -130,6 +127,10 @@ void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 
 Token *tokenize(char *p);
+
 Node *expr(void);
 void program(void);
+
+void add_type(Node *node);
+
 void gen(Node *node);
