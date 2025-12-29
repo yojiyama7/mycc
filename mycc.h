@@ -51,8 +51,8 @@ typedef enum {
   // 二項演算 (l-value, r-value) -> r-value
   ND_ASSIGN,    // =
   // 単項演算子 (r-value) -> r-value
-  ND_DEREF,     // *     前置
-  ND_CALL,      // (...) 後置
+  ND_DEREF,         // *     前置
+  ND_CALL,          // (...) 後置
   // 単項演算子 (l-value) -> r-value
   ND_ADDR,      // &     前置
   // ;で終わる文
@@ -91,11 +91,12 @@ struct s_LVar {
 typedef struct s_Node Node;
 struct s_Node {
   NodeKind kind;
-  Node *lhs;  // 二項演算子: 左辺
-              // 単項演算子: 単体の被演算子
-  Node *rhs;  // 二項演算子: 右辺
-  int val;    // ND_NUM: 値
-  int offset; // ND_LVAR: ローカル変数のオフセット値
+  Node *lhs;    // 二項演算子: 左辺
+                // 単項演算子: 単体の被演算子
+  Node *rhs;    // 二項演算子: 右辺
+  int val;      // ND_NUM: 値
+  int offset;   // ND_LVAR: ローカル変数のオフセット値
+  Token *token; // 元となったトークン
 
   Type *type; // expr系: 評価された時の型
               // FUNCDEF: 関数の返り値の型
