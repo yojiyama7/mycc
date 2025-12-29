@@ -3,15 +3,19 @@
 char *param_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 int stmt_id;
 
-// nodeの持つoffsetが指し示す変数のアドレスをスタックにpushする
+// アドレスをスタックにpushする(そのアドレスが示す先に代入などがされる)
 void gen_lval(Node *node) {
-  if (node->kind != NK_LVAR) {
-    error("代入の左辺値が変数ではありません");
+  if (node->kind == NK_DEREF) {
+    gen(node->lhs);
+    return;
   }
-
-  printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", node->offset);
-  printf("  push rax\n");
+  if (node->kind == NK_LVAR) {
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", node->offset);
+    printf("  push rax\n");
+    return;
+  }
+  error("代入の左辺値が変数ではありません");
 }
 
 void gen(Node *node) {

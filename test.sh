@@ -218,4 +218,13 @@ int main() {
   putnum(b);
   return *b;
 }"
+assert 42 "\
+int main() {
+  int a; int *b; int **c;
+  a = 10;
+  b = &a;
+  c = &b;
+  **c = 42;
+  return a;
+}"
 echo OK
