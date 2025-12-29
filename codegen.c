@@ -29,9 +29,11 @@ void gen(Node *node) {
   // LVAR単体を右辺値として処理する
   case ND_LVAR:
     gen_lval(node);
-    printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
-    printf("  push rax\n");
+    if (node->type->core != ARRAY) { // XXX: ここにこの書き方まずい気がする
+      printf("  pop rax\n");
+      printf("  mov rax, [rax]\n");
+      printf("  push rax\n");
+    }
     return;
   case ND_ASSIGN:
     gen_lval(node->lhs);

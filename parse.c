@@ -101,7 +101,7 @@ Token *tokenize(char *p) {
       p += 2;
       continue;
     }
-    if (strchr("+-*/()<>=;{},&", *p)) {
+    if (strchr("+-*/()<>=;{},&[]", *p)) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = 1;
       p++;
@@ -127,6 +127,8 @@ Token *tokenize(char *p) {
         cur->kind = TK_WHILE;
       } else if (equal_str(cur, "int")) {
         cur->kind = TK_INT;
+      } else if (equal_str(cur, "sizeof")) {
+        cur->kind = TK_SIZEOF;
       }
       continue;
     }
@@ -167,18 +169,15 @@ Node *new_add(Node *a, Node *b) {
   if (a->type->core == INT && b->type->core == INT) {
     return new_node(ND_ADD, a, b);
   }
-  if (a->type->core == PTR && b->type->core == PTR) {
+  if (a->type->ptr_to && b->type->ptr_to) {
     error("ポインターとポインターを足すことはできません");
   }
-  if (a->type->core == INT && b->type->core == PTR) {
+  if (a->type->core == INT && b->type->ptr_to) {
     Node *tmp = a;
     a = b;
     b = tmp;
   }
-  int size = 4; // ptr to INT
-  if (a->type->ptr_to->core == PTR) {
-    size = 8; // ptr to ptr
-  }
+  int size = calc_type_size(a->type->ptr_to);
   return new_node(ND_ADD, a, new_node(ND_MUL, b, new_num(size)));
 }
 
@@ -189,17 +188,13 @@ Node *new_sub(Node *a, Node *b) {
   if (a->type->core == INT && b->type->core == INT) {
     return new_node(ND_SUB, a, b);
   }
-  if (a->type->core == INT && b->type->core == PTR) {
+  if (a->type->core == INT && b->type->ptr_to) {
     error("整数からポインターを引くことはできません");
   }
-  if (a->type->core == PTR && b->type->core == PTR) {
+  if (a->type->ptr_to && b->type->ptr_to) {
     return new_node(ND_SUB, a, b);
   }
-  // ptr - int
-  int size = 4; // ptr to INT
-  if (a->type->ptr_to->core == PTR) {
-    size = 8; // ptr to ptr
-  }
+  int size = calc_type_size(a->type->ptr_to);
   return new_node(ND_SUB, a, new_node(ND_MUL, b, new_num(size)));
 }
 
@@ -274,6 +269,11 @@ Node *unary(void) {
   }
   if (consume("&")) {
     return new_node(ND_ADDR, unary(), NULL);
+  }
+  if (consume_keyword(TK_SIZEOF)) {
+    Node *u = unary();
+    solve_type(u);
+    return new_num(calc_type_size(u->type));
   }
 	return primary();
 }
@@ -359,6 +359,11 @@ Type *try_decl(Token **ident_token) {
     type = pointer_to(type);
   }
   *ident_token = expect_ident();
+  while (consume("[")) {
+    type = array_of(type);
+    type->array_size = expect_number();
+    expect("]"); 
+  }
   return type;
 }
 
@@ -434,9 +439,9 @@ Node *stmt(void) {
     lvar->len = ident->len;
     node->defined_var = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-      lvar->offset = 8;
+      lvar->offset = calc_type_mem_size(type);
     } else {
-      lvar->offset = cur_funcdef->locals->offset + 8;
+      lvar->offset = cur_funcdef->locals->offset + calc_type_mem_size(type);
     }
     cur_funcdef->locals = lvar;
   } else if (consume_keyword(TK_RETURN)) {
@@ -487,9 +492,9 @@ Node *funcdef(void) {
     lvar->len = ident->len;
     lvar->reg = param_regs[i];
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-      lvar->offset = 8;
+      lvar->offset = calc_type_mem_size(type);
     } else {
-      lvar->offset = cur_funcdef->locals->offset + 8;
+      lvar->offset = cur_funcdef->locals->offset +  calc_type_mem_size(type);
     }
     node->offset = lvar->offset;
     cur_funcdef->locals = lvar;

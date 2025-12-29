@@ -87,16 +87,12 @@ assert_expr_with_asset() {
 }
 
 # make && ./mycc "\
-# main() {
-#   return foo(23);
-# }
-# foo(a) {
-#   return a;
-# }" > tmp.s
-# cc -z noexecstack -o tmp tmp.s
+# int main() { int z; int a[10]; int *b; b = a; *a = 100; return *a; }" > tmp.s
+# cc -z noexecstack -c -o tmp.o tmp.s
+# cc -c -o asset.o asset.c
+# cc -z noexecstack -o tmp tmp.o asset.o
 # ./tmp
 # echo $?
-
 # exit
 
 assert_expr 0 "0"
@@ -250,4 +246,21 @@ int main() {
   putnum(*(a - 5));
   return *(a - 1);
 }"
+assert_expr 4 "sizeof(42)"
+assert_stmts 8 "int *a; return sizeof(a);"
+# assert_expr 4 "sizeof(int)"
+# assert_expr 8 "sizeof(int *)"
+assert_stmts 0 "int a[10]; int **b[10];"
+assert_with_asset 9 "\
+int main() {
+  int a[10];
+  
+  int i;
+  for (i = 0; i < 10; i = i + 1) {
+    *(a + i) = i * i;
+    putnum(*(a + i));
+  }
+  return *(a + 3);
+}"
+
 echo OK

@@ -11,6 +11,7 @@
 
 typedef enum {
   TK_NUM,
+  TK_IDENT,
   TK_RESERVED,
   // keyword
   TK_RETURN,
@@ -18,7 +19,7 @@ typedef enum {
   TK_ELSE,
   TK_FOR,
   TK_WHILE,
-  TK_IDENT,
+  TK_SIZEOF,
   TK_INT,
   // ---
   TK_EOF,
@@ -70,8 +71,9 @@ typedef enum {
 
 typedef struct s_Type Type;
 struct s_Type {
-  enum { INT, PTR } core;
+  enum { INT, PTR, ARRAY } core;
   Type *ptr_to;
+  size_t array_size;
 };
 
 extern Type *ty_int;
@@ -133,7 +135,10 @@ Token *tokenize(char *p);
 Node *expr(void);
 void program(void);
 
+size_t calc_type_size(Type *ty);
+size_t calc_type_mem_size(Type *ty);
 Type *pointer_to(Type *ty);
+Type *array_of(Type *ty);
 void solve_type(Node *node);
 
 void gen(Node *node);
