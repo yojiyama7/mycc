@@ -182,6 +182,27 @@ Node *new_add(Node *a, Node *b) {
   return new_node(ND_ADD, a, new_node(ND_MUL, b, new_num(size)));
 }
 
+Node *new_sub(Node *a, Node *b) {
+  solve_type(a);
+  solve_type(b);
+
+  if (a->type->core == INT && b->type->core == INT) {
+    return new_node(ND_SUB, a, b);
+  }
+  if (a->type->core == INT && b->type->core == PTR) {
+    error("整数からポインターを引くことはできません");
+  }
+  if (a->type->core == PTR && b->type->core == PTR) {
+    return new_node(ND_SUB, a, b);
+  }
+  // ptr - int
+  int size = 4; // ptr to INT
+  if (a->type->ptr_to->core == PTR) {
+    size = 8; // ptr to ptr
+  }
+  return new_node(ND_SUB, a, new_node(ND_MUL, b, new_num(size)));
+}
+
 LVar *find_lvar(Token *tok) {
   for (LVar *var = cur_funcdef->locals; var; var = var->next) {
     if (tok->len == var->len && memcmp(tok->str, var->name, var->len) == 0) {
@@ -276,7 +297,7 @@ Node *add(void) {
     if (consume("+")) {
       node = new_add(node, mul());
     } else if (consume("-")) {
-      node = new_node(ND_SUB, node, mul());
+      node = new_sub(node, mul());
     } else {
       return node;
     }

@@ -238,4 +238,16 @@ int main() {
   putnum(*(a + 4));
   return *(a + 1);
 }"
+assert_with_asset 32 "\
+int main() {
+  int *a;
+  a = alloc5(2, 4, 8, 16, 32);
+  a = a + 5;
+  putnum(*(a - 1));
+  putnum(*(a - 2));
+  putnum(*(a - 3));
+  putnum(*(a - 4));
+  putnum(*(a - 5));
+  return *(a - 1);
+}"
 echo OK
