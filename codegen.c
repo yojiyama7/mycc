@@ -15,7 +15,7 @@ void gen_lval(Node *node) {
     printf("  push rax\n");
     return;
   }
-  error("代入の左辺値が変数ではありません");
+  error("左辺値として有効なアドレスを取得できません");
 }
 
 void gen(Node *node) {
@@ -36,7 +36,6 @@ void gen(Node *node) {
   case ND_ASSIGN:
     gen_lval(node->lhs);
     gen(node->rhs);
-
     printf("  pop rdi\n");
     printf("  pop rax\n");
     printf("  mov [rax], rdi\n");
@@ -52,7 +51,7 @@ void gen(Node *node) {
     printf("  push rax\n");
     return;
   case ND_EXPRSTMT:
-    gen(node->body);
+    gen(node->lhs);
     printf("  pop rax\n");
     return ;
   case ND_RETURN:
@@ -121,15 +120,11 @@ void gen(Node *node) {
   case ND_CALL:
     int i = 0;
     cur = node->args;
-    while (cur && i < 6) {
+    while (cur) {
       gen(cur);
       printf("  pop %s\n", param_regs[i]);
       cur = cur->next;
       i++;
-    }
-    // 長さ6超過
-    if (cur) {
-      error("引数が6つ超過あります");
     }
     printf("  push rbp\n");     // XXX: rbpをスタックに積んで
     printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して

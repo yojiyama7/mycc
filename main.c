@@ -35,12 +35,9 @@ int main(int argc, char **argv) {
   printf(".globl main\n");
 
   for (int i = 0; code[i]; i++) {
-    // fprintf(stderr, "%.*s:\n", code[i]->func_name_len, code[i]->func_name);
     printf("%.*s:\n", code[i]->func_name_len, code[i]->func_name);
 
     // プロローグ
-    // int frame_bytes = 0;
-    
     printf("  push rbp\n"); // rpbの保持
     printf("  mov rbp, rsp\n");
     if (code[i]->locals) {

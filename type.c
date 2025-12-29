@@ -12,7 +12,7 @@ Type *copy_type(Type *ty) {
   return cloned;
 }
 
-void add_type(Node *node) {
+void solve_type(Node *node) {
   if (node == NULL) {
     return ;
   }
@@ -21,8 +21,8 @@ void add_type(Node *node) {
     return;
   }
 
-  add_type(node->lhs);
-  add_type(node->rhs);
+  solve_type(node->lhs);
+  solve_type(node->rhs);
 
   switch (node->kind) {
   case ND_ADD:

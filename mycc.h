@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// #define LEN(arr) (sizeof(arr)/sizeof(*arr))
+
 typedef enum {
   TK_NUM,
   TK_RESERVED,
@@ -131,6 +133,6 @@ Token *tokenize(char *p);
 Node *expr(void);
 void program(void);
 
-void add_type(Node *node);
+void solve_type(Node *node);
 
 void gen(Node *node);
