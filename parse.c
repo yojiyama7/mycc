@@ -20,14 +20,22 @@ bool consume_keyword(char *op) {
       token->kind == TK_IF ||
       token->kind == TK_ELSE ||
       token->kind == TK_FOR ||
-      token->kind == TK_WHILE ||
-      token->kind == TK_INT ) ||
+      token->kind == TK_WHILE ) ||
       (int)strlen(op) != token->len ||
       memcmp(op, token->str, token->len) != 0) {
     return false;
   }
   token = token->next;
   return true;
+}
+
+Token *consume_type() {
+  if (token->kind != TK_INT) {
+    return false;
+  }
+  Token *tok = token;
+  token = token->next;
+  return tok;
 }
 
 Token *consume_ident(void) {
@@ -319,6 +327,27 @@ Node *expr(void) {
   return assign();
 }
 
+Type *try_type(void) {
+  Token *tok = consume_type();
+  if (tok) {
+    Type *type = calloc(1, sizeof(Type));
+    if (tok->kind == TK_INT) {
+      type->type = INT;
+    } else {
+      error("不正な型です");
+    }
+    Type *cur = type;
+    while (consume("*")) {
+      Type *ptr = calloc(1, sizeof(Type));
+      ptr->type = PTR;
+      ptr->ptr_to = cur;
+      cur = ptr;
+    }
+    return type;
+  }
+  return NULL;
+}
+
 Node *stmt(void) {
   Node *node;
 
@@ -377,7 +406,9 @@ Node *stmt(void) {
     return node;
   }
 
-  if (consume_keyword("int")) {
+  // 変数定義
+  Type* type = try_type();
+  if (type) {
     node = calloc(1, sizeof(Node));
     node->kind = NK_VARDEF;
     Token *tok = expect_ident();
@@ -386,8 +417,10 @@ Node *stmt(void) {
     }
     LVar *lvar = calloc(1, sizeof(LVar));
     lvar->next = cur_funcdef->locals;
+    lvar->type = type;
     lvar->name = tok->str;
     lvar->len = tok->len;
+    node->defined_var = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
       lvar->offset = 8;
     } else {
@@ -410,7 +443,8 @@ Node *stmt(void) {
 
 // 再起的に呼ばれることはないと仮定
 Node *funcdef(void) {
-  if (!consume_keyword("int")) {
+  Type *type = try_type();
+  if (!type) {
     error("関数定義のための'int'がありません");
   }
   Token *ident = consume_ident(); // expect_ident
@@ -419,6 +453,7 @@ Node *funcdef(void) {
   }
   Node *node = calloc(1, sizeof(Node));
   node->kind = NK_FUNCDEF;
+  node->ret_type = type;
   node->func_name = ident->str;
   node->func_name_len = ident->len;
   cur_funcdef = node; // 再起的に呼ばれないので問題ない
@@ -428,27 +463,28 @@ Node *funcdef(void) {
   Node *cur = &head;
   int i = 0;
   while (!consume(")") && i < 6) {
-    if (!consume_keyword("int")) {
-      error("引数宣言のための'int'がありません");
+    type = try_type();
+    if (!type) {
+      error("引数宣言のための型がありません");
     }
     Token *ident = expect_ident();
     LVar *lvar = find_lvar(ident);
     if (lvar) {
       error_at(ident->str, "同名の引数があります");
-    } else {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = cur_funcdef->locals;
-      lvar->name = ident->str;
-      lvar->len = ident->len;
-      lvar->reg = param_regs[i];
-      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-        lvar->offset = 8;
-      } else {
-        lvar->offset = cur_funcdef->locals->offset + 8;
-      }
-      node->offset = lvar->offset;
-      cur_funcdef->locals = lvar;
     }
+    lvar = calloc(1, sizeof(LVar));
+    lvar->next = cur_funcdef->locals;
+    lvar->type = type;
+    lvar->name = ident->str;
+    lvar->len = ident->len;
+    lvar->reg = param_regs[i];
+    if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+      lvar->offset = 8;
+    } else {
+      lvar->offset = cur_funcdef->locals->offset + 8;
+    }
+    node->offset = lvar->offset;
+    cur_funcdef->locals = lvar;
     if (!consume(",")) {
       expect(")");
       break;

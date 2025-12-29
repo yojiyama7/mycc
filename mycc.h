@@ -58,9 +58,16 @@ typedef enum {
   NK_PARAM,
 } NodeKind;
 
+typedef struct s_Type Type;
+struct s_Type {
+  enum { INVALID, INT, PTR } type;
+  struct s_Type *ptr_to;
+};
+
 typedef struct s_LVar LVar;
 struct s_LVar {
   LVar *next;
+  Type *type;
   char *name;
   int len;
   int offset;
@@ -83,11 +90,13 @@ struct s_Node {
   Node *body; // FOR, WHILE, BLOCK, FUNCDEF
   char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
   int func_name_len;  // CALL, FUNCDEF
+  Type *ret_type;     // FUNCDEF
   Node *args;         // CALL
   char *param_name;   // PARAM
   int param_name_len; // PARAM
   // XXX: param, func が冗長だな、、、
   LVar *locals; // FUNCDEF
+  LVar *defined_var; // VARDEF
 
   Node *next; // BLOCK, CALL, PARAM
 };
