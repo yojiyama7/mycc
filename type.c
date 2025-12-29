@@ -12,6 +12,14 @@ Type *copy_type(Type *ty) {
   return cloned;
 }
 
+Type *pointer_to(Type *ty) {
+  Type *ptr = calloc(1, sizeof(Type));
+
+  ptr->core = PTR;
+  ptr->ptr_to = ty;
+  return ptr;
+}
+
 void solve_type(Node *node) {
   if (node == NULL) {
     return ;

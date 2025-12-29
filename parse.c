@@ -325,19 +325,20 @@ Node *expr(void) {
   return assign();
 }
 
-Type *try_type(void) {
+Type *try_decl(Token **ident_token) {
   Token *tok = consume_type();
-  if (tok) {
-    Type *cur = ty_int;
-    while (consume("*")) {
-      Type *ptr = calloc(1, sizeof(Type));
-      ptr->core = PTR;
-      ptr->ptr_to = cur;
-      cur = ptr;
-    }
-    return cur;
+  if (!tok) {
+    return NULL;
   }
-  return NULL;
+  Type *type;
+  if (tok->kind == TK_INT) {
+    type = ty_int;
+  }
+  while (consume("*")) {
+    type = pointer_to(type);
+  }
+  *ident_token = expect_ident();
+  return type;
 }
 
 Node *stmt(void) {
@@ -397,19 +398,19 @@ Node *stmt(void) {
   }
 
   // 変数定義
-  Type* type = try_type();
+  Token *ident;
+  Type *type = try_decl(&ident);
   if (type) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_VARDEF;
-    Token *tok = expect_ident();
-    if (find_lvar(tok)) {
+    if (find_lvar(ident)) {
       error("既に定義された変数名です");
     }
     LVar *lvar = calloc(1, sizeof(LVar));
     lvar->next = cur_funcdef->locals;
     lvar->type = type;
-    lvar->name = tok->str;
-    lvar->len = tok->len;
+    lvar->name = ident->str;
+    lvar->len = ident->len;
     node->defined_var = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
       lvar->offset = 8;
@@ -433,13 +434,10 @@ Node *stmt(void) {
 
 // 再起的に呼ばれることはないと仮定
 Node *funcdef(void) {
-  Type *type = try_type();
+  Token *ident;
+  Type *type = try_decl(&ident);
   if (!type) {
-    error("関数定義のための'int'がありません");
-  }
-  Token *ident = consume_ident(); // expect_ident
-  if (!ident) {
-    error_at(token->str, "関数名ではありません");
+    error("関数定義のための型がありません");
   }
   Node *node = calloc(1, sizeof(Node));
   node->kind = ND_FUNCDEF;
@@ -452,11 +450,11 @@ Node *funcdef(void) {
   Node *cur = &head;
   int i = 0;
   while (!consume(")") && i < 6) {
-    type = try_type();
+    Token *ident;
+    type = try_decl(&ident);
     if (!type) {
       error("引数宣言のための型がありません");
     }
-    Token *ident = expect_ident();
     LVar *lvar = find_lvar(ident);
     if (lvar) {
       error_at(ident->str, "同名の引数があります");

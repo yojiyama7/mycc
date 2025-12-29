@@ -133,6 +133,7 @@ Token *tokenize(char *p);
 Node *expr(void);
 void program(void);
 
+Type *pointer_to(Type *ty);
 void solve_type(Node *node);
 
 void gen(Node *node);
