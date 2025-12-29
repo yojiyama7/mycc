@@ -67,6 +67,8 @@ typedef enum {
   ND_BLOCK,     // {}
   // 関数定義
   ND_FUNCDEF,
+  // ???
+  ND_FUNCNAME,
 } NodeKind;
 
 typedef struct s_Type Type;

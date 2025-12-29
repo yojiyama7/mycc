@@ -262,5 +262,17 @@ int main() {
   }
   return *(a + 3);
 }"
+assert_with_asset 81 "\
+int main() {
+  int a[10];
+  
+  int i;
+  for (i = 0; i < 10; i = i + 1) {
+    a[i] = i * i;
+    putnum(i[a]);
+  }
+  return a[9];
+}
+"
 
 echo OK

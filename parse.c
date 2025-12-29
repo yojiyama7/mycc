@@ -215,16 +215,39 @@ Node *primary(void) {
   }
   Token *tok = consume_ident();
   if (tok) {
-    // CALL | IDENT
+    LVar *lvar = find_lvar(tok);
+
+    // LVAR
+    if (lvar) {
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = ND_LVAR;
+      node->offset = lvar->offset;
+      node->type = lvar->type;
+      return node;
+    }
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_FUNCNAME;
+    node->func_name = tok->str;
+    node->func_name_len = tok->len;
+    return node;
+  }
+
+  return new_num(expect_number());
+}
+
+Node *postfix(void) {
+  Node *node = primary();
+
+  while (true) {
     if (consume("(")) {
       // CALL
-      Node *node = calloc(1, sizeof(Node));
-      node->kind = ND_CALL;
-      if (find_lvar(tok)) { // QUESTION: これっている？ // 型で見た方がいいかも
+      Node *nd = calloc(1, sizeof(Node));
+      nd->kind = ND_CALL;
+      if (node->kind == ND_LVAR) { // QUESTION: これっている？ // 型で見た方がいいかも
         error("ローカル変数を呼び出ししています");
       }
-      node->func_name = tok->str;
-      node->func_name_len = tok->len;
+      nd->func_name = node->func_name;
+      nd->func_name_len = node->func_name_len;
       Node head; head.next = NULL;
       Node *cur = &head;
       if (!consume(")")) {
@@ -238,31 +261,26 @@ Node *primary(void) {
           cur = cur->next;
         }
       }
-      node->args = head.next;
-      return node;
+      nd->args = head.next;
+      node = nd;
+      continue;
     }
-    // LVAR
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR; 
-    LVar *lvar = find_lvar(tok);
-    if (lvar) {
-      node->offset = lvar->offset;
-    } else {
-      error("定義されていない変数です");
+    if (consume("[")) {
+      node = new_node(ND_DEREF, new_add(node, expr()), NULL);
+      expect("]");
+      continue;
     }
-    node->type = lvar->type;
+
     return node;
   }
-
-  return new_num(expect_number());
 }
 
 Node *unary(void) {
 	if (consume("+")) {
-		return primary();
+		return postfix();
 	}
 	if (consume("-")) {
-		return new_node(ND_SUB, new_num(0), primary());
+		return new_node(ND_SUB, new_num(0), postfix());
 	}
   if (consume("*")) {
     return new_node(ND_DEREF, unary(), NULL);
@@ -275,7 +293,7 @@ Node *unary(void) {
     solve_type(u);
     return new_num(calc_type_size(u->type));
   }
-	return primary();
+	return postfix();
 }
 
 Node *mul(void) {
