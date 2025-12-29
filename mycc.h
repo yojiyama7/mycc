@@ -8,7 +8,9 @@
 #include <string.h>
 
 typedef enum {
+  TK_NUM,
   TK_RESERVED,
+  // keyword
   TK_RETURN,
   TK_IF,
   TK_ELSE,
@@ -16,7 +18,7 @@ typedef enum {
   TK_WHILE,
   TK_IDENT,
   TK_INT,
-  TK_NUM,
+  // ---
   TK_EOF,
 } TokenKind;
 
@@ -25,43 +27,54 @@ struct s_Token {
   TokenKind kind; // トークンの型
   Token *next;    // 次の入力トークン
   int val;        // kindがTK_NUMの場合、その数値
-  char *str;      // トークン文字列
-  int len;
+  char *str;      // トークン文字列の先頭ポインタ
+  int len;        // トークン文字列の長さ
 };
 
 typedef enum {
-  NK_ADD,
-  NK_SUB,
-  NK_MUL,
-  NK_DIV,
-  NK_EQ,
-  NK_NE,
-  NK_LT,
-  // NK_GT,
-  NK_LE,
-  // NK_GE,
-  NK_ASSIGN,
-  NK_LVAR,
-  NK_NUM,
-  NK_DEREF,
-  NK_ADDR,
-  NK_EXPRSTMT,
-  NK_RETURN,
-  NK_VARDEF,
-  NK_IF,
-  NK_IFELSE,
-  NK_FOR,
-  NK_WHILE,
-  NK_BLOCK,
-  NK_CALL,
-  NK_FUNCDEF,
-  NK_PARAM,
+  // リテラル[単項のr-value]
+  ND_NUM,       // 123
+  // l-value
+  ND_LVAR,
+  // 二項演算 (r-value, r-value) -> r-value
+  ND_ADD,       // +
+  ND_SUB,       // -
+  ND_MUL,       // *
+  ND_DIV,       // /
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LT,        // <
+  ND_LE,        // <=
+  // 二項演算 (l-value, r-value) -> r-value
+  ND_ASSIGN,    // =
+  // 単項演算子 (r-value) -> r-value
+  ND_DEREF,     // *     前置
+  ND_CALL,      // (...) 後置
+  // 単項演算子 (l-value) -> r-value
+  ND_ADDR,      // &     前置
+  // ;で終わる文
+  ND_EXPRSTMT,  // <#r-value#>;
+  ND_RETURN,    // return <#r-value#>;
+  ND_VARDEF,    // <#type#> <#decl#>;
+  // 制御構文
+  ND_IF,
+  ND_IFELSE,
+  ND_FOR,
+  ND_WHILE,
+  ND_BLOCK,     // {}
+  // 関数定義
+  ND_FUNCDEF,
 } NodeKind;
+
+typedef enum {
+  TY_INT,
+  TY_PTR,
+} TypeKind;
 
 typedef struct s_Type Type;
 struct s_Type {
-  enum { INVALID, INT, PTR } type;
-  struct s_Type *ptr_to;
+  TypeKind type;
+  Type *ptr_to;
 };
 
 typedef struct s_LVar LVar;
@@ -77,28 +90,34 @@ struct s_LVar {
 typedef struct s_Node Node;
 struct s_Node {
   NodeKind kind;
-  Node *lhs;
-  Node *rhs;
-  int val;    // kindがNK_NUMの場合のみ使う
-  int offset; // NK_LVAR
+  Node *lhs;  // 二項演算子: 左辺
+              // 単項演算子: 単体の被演算子
+  Node *rhs;  // 二項演算子: 右辺
+  int val;    // ND_NUM: 値
+  int offset; // ND_LVAR: ローカル変数のオフセット値
 
-  Node *cond; // IF, IFELSE, FOR, WHILE
-  Node *then; // IF, IFELSE
-  Node *els;  // IFELSE
-  Node *init; // FOR
-  Node *inc;  // FOR
-  Node *body; // FOR, WHILE, BLOCK, FUNCDEF
+  Type *type; // expr系: 評価された時の型
+              // FUNCDEF: 関数の返り値の型
+
+  Node *cond; // IF | IFELSE | FOR | WHILE:
+              //              条件式
+  Node *then; // IF | FOR | WHILE:
+              //              条件を満たした際に実行される文
+  Node *els;  // IFELSE:      条件を満たさなかった際に実行される文
+  Node *init; // FOR:         初期化式
+  Node *inc;  // FOR:         更新式
+  Node *body; // BLOCK:       中身の文たちのうち1番目
+              // FUNCDEF:     関数の中身の文
   char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
   int func_name_len;  // CALL, FUNCDEF
-  Type *ret_type;     // FUNCDEF
-  Node *args;         // CALL
-  char *param_name;   // PARAM
-  int param_name_len; // PARAM
-  // XXX: param, func が冗長だな、、、
-  LVar *locals; // FUNCDEF
-  LVar *defined_var; // VARDEF
 
-  Node *next; // BLOCK, CALL, PARAM
+  Node *args;         // CALL: 実引数(expr)たちのうち1番目
+  // XXX: func が冗長だな、、、
+  LVar *locals;       // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
+  LVar *defined_var;  // VARDEF: 自身(VARDEF型のあるNode)が定義した変数
+
+  Node *next; // BLOCK: body を先頭とする stmt たち
+              // CALL:  args を先頭とする expr たち
 };
 
 extern Token *token;

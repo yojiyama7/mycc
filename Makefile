@@ -4,7 +4,8 @@ LDFLAGS :=
 NAME := mycc
 SRCS := main.c \
         parse.c \
-        codegen.c
+				type.c \
+        codegen.c \
 OBJS := $(addprefix objs/, $(SRCS:.c=.o))
 
 .PHONY: all

@@ -15,18 +15,13 @@ bool consume(char *op) {
   return true;
 }
 
-bool consume_keyword(char *op) {
-  if (!(token->kind == TK_RETURN ||
-      token->kind == TK_IF ||
-      token->kind == TK_ELSE ||
-      token->kind == TK_FOR ||
-      token->kind == TK_WHILE ) ||
-      (int)strlen(op) != token->len ||
-      memcmp(op, token->str, token->len) != 0) {
-    return false;
+Token *consume_keyword(TokenKind tk) {
+  if (token->kind != tk) {
+    return NULL;
   }
+  Token *tok = token;
   token = token->next;
-  return true;
+  return tok;
 }
 
 Token *consume_type() {
@@ -40,7 +35,7 @@ Token *consume_type() {
 
 Token *consume_ident(void) {
   if (token->kind != TK_IDENT) {
-    return NULL;
+    return false;
   }
   Token *tok = token;
   token = token->next;
@@ -172,7 +167,7 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
 
 Node *new_node_num(int val) {
   Node *node = calloc(1, sizeof(Node));
-  node->kind = NK_NUM;
+  node->kind = ND_NUM;
   node->val = val;
   return node;
 }
@@ -196,7 +191,7 @@ Node *primary(void) {
   if (tok) {
     if (consume("(")) {
       Node *node = calloc(1, sizeof(Node));
-      node->kind = NK_CALL;
+      node->kind = ND_CALL;
       if (find_lvar(tok)) { // QUESTION: これっている？
         error("ローカル変数を呼び出ししています");
       }
@@ -217,7 +212,7 @@ Node *primary(void) {
       return node;
     }
     Node *node = calloc(1, sizeof(Node));
-    node->kind = NK_LVAR;
+    node->kind = ND_LVAR;
 
     LVar *lvar = find_lvar(tok);
     if (lvar) {
@@ -247,13 +242,13 @@ Node *unary(void) {
 		return primary();
 	}
 	if (consume("-")) {
-		return new_node(NK_SUB, new_node_num(0), primary());
+		return new_node(ND_SUB, new_node_num(0), primary());
 	}
   if (consume("*")) {
-    return new_node(NK_DEREF, unary(), NULL);
+    return new_node(ND_DEREF, unary(), NULL);
   }
   if (consume("&")) {
-    return new_node(NK_ADDR, unary(), NULL);
+    return new_node(ND_ADDR, unary(), NULL);
   }
 	return primary();
 }
@@ -263,9 +258,9 @@ Node *mul(void) {
 
   while (true) {
     if (consume("*")) {
-      node = new_node(NK_MUL, node, unary());
+      node = new_node(ND_MUL, node, unary());
     } else if (consume("/")) {
-      node = new_node(NK_DIV, node, unary());
+      node = new_node(ND_DIV, node, unary());
     } else {
       return node;
     }
@@ -276,9 +271,9 @@ Node *add(void) {
   Node *node = mul();
   while (true) {
     if (consume("+")) {
-      node = new_node(NK_ADD, node, mul());
+      node = new_node(ND_ADD, node, mul());
     } else if (consume("-")) {
-      node = new_node(NK_SUB, node, mul());
+      node = new_node(ND_SUB, node, mul());
     } else {
       return node;
     }
@@ -288,16 +283,16 @@ Node *add(void) {
 Node *relational(void) {
   Node *node = add();
   if (consume("<=")) {
-    return new_node(NK_LE, node, add());
+    return new_node(ND_LE, node, add());
   }
   if (consume(">=")) {
-    return new_node(NK_LE, add(), node);
+    return new_node(ND_LE, add(), node);
   }
   if (consume("<")) {
-		return new_node(NK_LT, node, add());
+		return new_node(ND_LT, node, add());
 	}
 	if (consume(">")) {
-    return new_node(NK_LT, add(), node);
+    return new_node(ND_LT, add(), node);
   }
   return node;
 }
@@ -305,10 +300,10 @@ Node *relational(void) {
 Node *equality(void) {
   Node *node = relational();
   if (consume("==")) {
-    return new_node(NK_EQ, node, add());
+    return new_node(ND_EQ, node, add());
   }
   if (consume("!=")) {
-    return new_node(NK_NE, node, add());
+    return new_node(ND_NE, node, add());
   }
   return node;
 }
@@ -317,7 +312,7 @@ Node *assign(void) {
   Node *node = equality();
 
   if (consume("=")) {
-    return new_node(NK_ASSIGN, node, assign());
+    return new_node(ND_ASSIGN, node, assign());
   }
 
   return node;
@@ -352,32 +347,32 @@ Node *stmt(void) {
   Node *node;
 
   // IF, IFELSE
-  if (consume_keyword("if")) {
+  if (consume_keyword(TK_IF)) {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_IF;
+    node->kind = ND_IF;
     expect("(");
     node->cond = expr();
     expect(")");
     node->then = stmt();
     // IFELSE
-    if (consume_keyword("else")) {
-      node->kind = NK_IFELSE;
+    if (consume_keyword(TK_ELSE)) {
+      node->kind = ND_IFELSE;
       node->els = stmt();
     }
     return node;
   }
-  if (consume_keyword("while")) {
+  if (consume_keyword(TK_WHILE)) {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_WHILE;
+    node->kind = ND_WHILE;
     expect("(");
     node->cond = expr();
     expect(")");
-    node->body = stmt();
+    node->then = stmt();
     return node;
   }
-  if (consume_keyword("for")) {
+  if (consume_keyword(TK_FOR)) {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_FOR;
+    node->kind = ND_FOR;
     expect("(");
     if (!consume(";")) {
       node->init = expr();
@@ -389,12 +384,12 @@ Node *stmt(void) {
     }
     node->inc = expr();
     expect(")");
-    node->body = stmt();
+    node->then = stmt();
     return node;
   }
   if (consume("{")) {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_BLOCK;
+    node->kind = ND_BLOCK;
     Node head;
     head.next = NULL;
     Node *cur = &head;
@@ -410,7 +405,7 @@ Node *stmt(void) {
   Type* type = try_type();
   if (type) {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_VARDEF;
+    node->kind = ND_VARDEF;
     Token *tok = expect_ident();
     if (find_lvar(tok)) {
       error("既に定義された変数名です");
@@ -427,14 +422,14 @@ Node *stmt(void) {
       lvar->offset = cur_funcdef->locals->offset + 8;
     }
     cur_funcdef->locals = lvar;
-  } else if (consume_keyword("return")) {
+  } else if (consume_keyword(TK_RETURN)) {
     // RETURN
     node = calloc(1, sizeof(Node));
-    node->kind = NK_RETURN;
+    node->kind = ND_RETURN;
     node->lhs = expr();
   } else {
     node = calloc(1, sizeof(Node));
-    node->kind = NK_EXPRSTMT;
+    node->kind = ND_EXPRSTMT;
     node->body = expr();
   }
   expect(";");
@@ -452,8 +447,8 @@ Node *funcdef(void) {
     error_at(token->str, "関数名ではありません");
   }
   Node *node = calloc(1, sizeof(Node));
-  node->kind = NK_FUNCDEF;
-  node->ret_type = type;
+  node->kind = ND_FUNCDEF;
+  node->type = type;
   node->func_name = ident->str;
   node->func_name_len = ident->len;
   cur_funcdef = node; // 再起的に呼ばれないので問題ない
