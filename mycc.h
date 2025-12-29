@@ -90,6 +90,14 @@ struct s_LVar {
   char *reg; // 引数を疑似的にローカル変数にしている場合、レジスタ名を入れる
 };
 
+typedef struct s_GVar GVar;
+struct s_GVar {
+  GVar *next;
+  Type *type;
+  char *name;
+  int len;
+};
+
 typedef struct s_Node Node;
 struct s_Node {
   NodeKind kind;
