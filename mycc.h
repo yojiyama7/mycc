@@ -75,7 +75,7 @@ typedef enum {
 
 typedef struct s_Type Type;
 struct s_Type {
-  enum { INT, PTR, ARRAY } core;
+  enum { INT, CHAR, PTR, ARRAY } core;
   Type *ptr_to;
   size_t array_size;
 };

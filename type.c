@@ -3,7 +3,9 @@
 Type *ty_int = &(Type){ INT };
 
 size_t calc_type_size(Type *ty) {
-  if (ty->core == INT) {
+  if (ty->core == CHAR) {
+    return 1;
+  } else if (ty->core == INT) {
     return 4;
   } else if (ty->core == PTR) {
     return 8;
