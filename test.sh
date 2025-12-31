@@ -87,7 +87,11 @@ assert_expr_with_asset() {
 }
 
 # make && ./mycc "\
-# int main() { int z; int a[10]; int *b; b = a; *a = 100; return *a; }" > tmp.s
+# int g_memo[100];
+# int main() {
+#   g_memo[99] = 42;
+#   return g_memo[99];
+# }" > tmp.s
 # cc -z noexecstack -c -o tmp.o tmp.s
 # cc -c -o asset.o asset.c
 # cc -z noexecstack -o tmp tmp.o asset.o
@@ -265,14 +269,47 @@ int main() {
 assert_with_asset 81 "\
 int main() {
   int a[10];
-  
+
   int i;
   for (i = 0; i < 10; i = i + 1) {
     a[i] = i * i;
     putnum(i[a]);
   }
   return a[9];
+}"
+assert 0 "\
+int g_memo[100];
+int main() {
+  return 0;
+}"
+assert 10 "\
+int a;
+int f() {
+  int a;
+  a = 10;
+  return a;
 }
-"
+int main() {
+  a = 42;
+  return f();
+}"
+assert 42 "\
+int g_memo[100];
+int main() {
+  g_memo[99] = 42;
+  return g_memo[99];
+}"
+# これができるの非常にプログラミング言語っぽい
+assert 1 "\
+int g_memo_fib[100];
+int fib(int x) {
+  if (x == 0) return 0;
+  if (x == 1) return 1;
+  if (g_memo_fib[x] != 0) return g_memo_fib[x];
+  return fib(x-1) + fib(x-2);
+}
+int main() {
+  return fib(32) == 2178309;
+}"
 
 echo OK

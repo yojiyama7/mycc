@@ -3,6 +3,7 @@
 Token *token;
 char *user_input;
 Node *cur_funcdef;
+GVar *globals;
 Node *code[100];
 
 bool equal_str(Token *tok, char *s) {
@@ -207,6 +208,15 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
+GVar *find_gvar(Token *tok) {
+  for (GVar *var = globals; var; var = var->next) {
+    if (tok->len == var->len && memcmp(tok->str, var->name, var->len) == 0) {
+      return var;
+    }
+  }
+  return NULL;
+}
+
 Node *primary(void) {
   if (consume("(")) {
     Node *node = expr();
@@ -216,13 +226,21 @@ Node *primary(void) {
   Token *tok = consume_ident();
   if (tok) {
     LVar *lvar = find_lvar(tok);
-
     // LVAR
     if (lvar) {
       Node *node = calloc(1, sizeof(Node));
       node->kind = ND_LVAR;
       node->offset = lvar->offset;
       node->type = lvar->type;
+      return node;
+    }
+    GVar *gvar = find_gvar(tok);
+    if (gvar) {
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = ND_GVAR;
+      node->gvar_name = gvar->name;
+      node->gvar_name_len = gvar->len;
+      node->type = gvar->type;
       return node;
     }
     Node *node = calloc(1, sizeof(Node));
@@ -380,7 +398,7 @@ Type *try_decl(Token **ident_token) {
   while (consume("[")) {
     type = array_of(type);
     type->array_size = expect_number();
-    expect("]"); 
+    expect("]");
   }
   return type;
 }
@@ -477,64 +495,86 @@ Node *stmt(void) {
 }
 
 // 再起的に呼ばれることはないと仮定
-Node *funcdef(void) {
+Node *toplevel(void) {
   Token *ident;
   Type *type = try_decl(&ident);
   if (!type) {
-    error("関数定義のための型がありません");
+    error("関数定義・グローバル変数定義のための型がありません");
   }
   Node *node = calloc(1, sizeof(Node));
-  node->kind = ND_FUNCDEF;
+  if (consume("(")) {
+    // FUNC_DEF
+    node->kind = ND_FUNCDEF;
+    node->type = type;
+    node->func_name = ident->str;
+    node->func_name_len = ident->len;
+    cur_funcdef = node; // 再起的に呼ばれないので問題ない
+    Node head; head.next = NULL;
+    Node *cur = &head;
+    int i = 0;
+    while (!consume(")") && i < 6) {
+      Token *ident;
+      type = try_decl(&ident);
+      if (!type) {
+        error("引数宣言のための型がありません");
+      }
+      LVar *lvar = find_lvar(ident);
+      if (lvar) {
+        error_at(ident->str, "同名の引数があります");
+      }
+      lvar = calloc(1, sizeof(LVar));
+      lvar->next = cur_funcdef->locals;
+      lvar->type = type;
+      lvar->name = ident->str;
+      lvar->len = ident->len;
+      lvar->reg = param_regs[i];
+      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+        lvar->offset = calc_type_mem_size(type);
+      } else {
+        lvar->offset = cur_funcdef->locals->offset +  calc_type_mem_size(type);
+      }
+      node->offset = lvar->offset;
+      cur_funcdef->locals = lvar;
+      if (!consume(",")) {
+        expect(")");
+        break;
+      }
+      cur = cur->next;
+      i++;
+    }
+    if (i == 6) {
+      error_at(token->str, "引数が6つ超過あります");
+    }
+    node->body = stmt();
+    return node;
+  }
+  // GVAR;
+  node->kind = ND_GVARDEF;
+  if (find_gvar(ident)) {
+    error("すでに同名のグローバル変数があります");
+  }
+  while (consume("[")) {
+    type = array_of(type);
+    type->array_size = expect_number();
+    expect("]");
+  }
+  expect(";");
+  GVar *gvar = calloc(1, sizeof(GVar));
+  gvar->type = type;
+  gvar->name = ident->str;
+  gvar->len = ident->len;
+  gvar->next = globals;
+  globals = gvar;
   node->type = type;
-  node->func_name = ident->str;
-  node->func_name_len = ident->len;
-  cur_funcdef = node; // 再起的に呼ばれないので問題ない
-  expect("(");
-  Node head; head.next = NULL;
-  Node *cur = &head;
-  int i = 0;
-  while (!consume(")") && i < 6) {
-    Token *ident;
-    type = try_decl(&ident);
-    if (!type) {
-      error("引数宣言のための型がありません");
-    }
-    LVar *lvar = find_lvar(ident);
-    if (lvar) {
-      error_at(ident->str, "同名の引数があります");
-    }
-    lvar = calloc(1, sizeof(LVar));
-    lvar->next = cur_funcdef->locals;
-    lvar->type = type;
-    lvar->name = ident->str;
-    lvar->len = ident->len;
-    lvar->reg = param_regs[i];
-    if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-      lvar->offset = calc_type_mem_size(type);
-    } else {
-      lvar->offset = cur_funcdef->locals->offset +  calc_type_mem_size(type);
-    }
-    node->offset = lvar->offset;
-    cur_funcdef->locals = lvar;
-    if (!consume(",")) {
-      expect(")");
-      break;
-    }
-    cur = cur->next;
-    i++;
-  }
-  if (i == 6) {
-    error_at(token->str, "引数が6つ超過あります");
-  }
-  node->body = stmt();
+  node->defined_gvar = gvar;
   return node;
 }
 
 void program(void) {
   int i = 0;
-  
+
   while (!at_eof()) {
-    code[i++] = funcdef();
+    code[i++] = toplevel();
     if (i >= 100) {
       error_at(token->str, "コードが多すぎます");
     }

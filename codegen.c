@@ -15,6 +15,11 @@ void gen_lval(Node *node) {
     printf("  push rax\n");
     return;
   }
+  if (node->kind == ND_GVAR) {
+    printf("  lea rax, %.*s[rip]\n", node->gvar_name_len, node->gvar_name);
+    printf("  push rax\n");
+    return;
+  }
   error("左辺値として有効なアドレスを取得できません");
 }
 
@@ -22,6 +27,8 @@ void gen(Node *node) {
   int sid;
   Node *cur;
 
+  // fprintf(stderr, "[%p]\n", node);
+  // error("HI!!!\n");
   switch (node->kind) {
   case ND_NUM:
     printf("  push %d\n", node->val);
@@ -30,6 +37,14 @@ void gen(Node *node) {
   case ND_LVAR:
     gen_lval(node);
     if (node->type->core != ARRAY) { // XXX: ここにこの書き方まずい気がする
+      printf("  pop rax\n");
+      printf("  mov rax, [rax]\n");
+      printf("  push rax\n");
+    }
+    return;
+  case ND_GVAR:
+    gen_lval(node);
+    if (node->type->core != ARRAY){ // XXX: ここにこの書き方まずい気がする
       printf("  pop rax\n");
       printf("  mov rax, [rax]\n");
       printf("  push rax\n");
@@ -65,6 +80,8 @@ void gen(Node *node) {
     printf("  ret # <<< ND_RETURN\n");
     return ;
   case ND_VARDEF:
+    return;
+  case ND_GVARDEF:
     return;
   case ND_IF:
     sid = stmt_id++;

@@ -39,6 +39,7 @@ typedef enum {
   ND_NUM,       // 123
   // l-value
   ND_LVAR,
+  ND_GVAR,
   // 二項演算 (r-value, r-value) -> r-value
   ND_ADD,       // +
   ND_SUB,       // -
@@ -59,6 +60,7 @@ typedef enum {
   ND_EXPRSTMT,  // <#r-value#>;
   ND_RETURN,    // return <#r-value#>;
   ND_VARDEF,    // <#type#> <#decl#>;
+  ND_GVARDEF,
   // 制御構文
   ND_IF,
   ND_IFELSE,
@@ -122,11 +124,14 @@ struct s_Node {
               // FUNCDEF:     関数の中身の文
   char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
   int func_name_len;  // CALL, FUNCDEF
+  char *gvar_name;
+  int gvar_name_len;
 
   Node *args;         // CALL: 実引数(expr)たちのうち1番目
   // XXX: func が冗長だな、、、
   LVar *locals;       // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
   LVar *defined_var;  // VARDEF: 自身(VARDEF型のあるNode)が定義した変数
+  GVar *defined_gvar;
 
   Node *next; // BLOCK: body を先頭とする stmt たち
               // CALL:  args を先頭とする expr たち
@@ -135,6 +140,7 @@ struct s_Node {
 extern Token *token;
 extern char *user_input;
 extern Node *cur_funcdef;
+extern GVar *globals;
 extern Node *code[100];
 extern char *param_regs[];
 

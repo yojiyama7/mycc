@@ -34,7 +34,18 @@ int main(int argc, char **argv) {
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");
 
+  printf(".data\n");
+  // グローバル変数の領域確保
+  for (GVar *gvar = globals; gvar; gvar = gvar->next) {
+    printf("%.*s:\n", gvar->len, gvar->name);
+    printf("  .zero %ld\n", calc_type_size(gvar->type));
+  }
+
+  printf(".text\n");
   for (int i = 0; code[i]; i++) {
+    if (code[i]->kind != ND_FUNCDEF) {
+      continue;
+    }
     printf("%.*s:\n", code[i]->func_name_len, code[i]->func_name);
 
     // プロローグ
