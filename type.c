@@ -16,20 +16,22 @@ size_t calc_type_size(Type *ty) {
   return 0;
 }
 
-size_t calc_type_mem_size(Type *ty) {
-  size_t size = calc_type_size(ty);
-  if (size < 8) {
-    size = 8;
-  }
-  return size;
-}
+// size_t calc_type_mem_size(Type *ty) {
+//   size_t size = calc_type_size(ty);
+//   if (size < 8) {
+//     size = 8;
+//   }
+//   return size;
+// }
 
 Type *copy_type(Type *ty) {
   Type *cloned = calloc(1, sizeof(Type));
-  if (ty->ptr_to) {
+  cloned->core = ty->core;
+  if (ty->core == PTR) {
     cloned->ptr_to = copy_type(ty->ptr_to);
-  } else {
-    cloned->core = ty->core;
+  } else if (ty->core == ARRAY) {
+    cloned->ptr_to = copy_type(ty->ptr_to);
+    cloned->array_size = ty->array_size;
   }
   return cloned;
 }
@@ -64,18 +66,23 @@ void solve_type(Node *node) {
 
   switch (node->kind) {
   case ND_ADD:
-    Type *a = node->lhs->type;
-    Type *b = node->rhs->type;
-    // fprintf(stderr, "[%d, %d]\n", node->lhs->kind, node->rhs->kind);
-    // fprintf(stderr, "<%p, %p>\n", a->ptr_to, b->ptr_to);
-
-    // node->type = ty_int;
-    // return;
-    if (a->ptr_to && b == ty_int) {
-      node->type = copy_type(a);
+    if (node->lhs->type->ptr_to && node->rhs->type == ty_int) {
+      node->type = copy_type(node->lhs->type);
       return;
     }
     break;
+  case ND_SUB:
+    if (node->lhs->type->ptr_to && node->rhs->type == ty_int) {
+      node->type = copy_type(node->lhs->type);
+      return;
+    }
+    break;
+  case ND_DEREF:
+    if (node->lhs->type->ptr_to == NULL) {
+      error("ポインタ型でない値をデリファレンスしています");
+    }
+    node->type = copy_type(node->lhs->type->ptr_to);
+    return;
   default:
     break;
   }

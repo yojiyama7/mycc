@@ -89,7 +89,8 @@ struct s_LVar {
   char *name;
   int len;
   int offset;
-  char *reg; // 引数を疑似的にローカル変数にしている場合、レジスタ名を入れる
+  bool is_reg;
+  int reg_idx; // 引数を疑似的にローカル変数にしている場合、レジスタ名を入れる
 };
 
 typedef struct s_GVar GVar;
@@ -137,12 +138,16 @@ struct s_Node {
               // CALL:  args を先頭とする expr たち
 };
 
+
+extern char *reg_1_names[];
+extern char *reg_4_names[];
+extern char *reg_names[];
+
 extern Token *token;
 extern char *user_input;
 extern Node *cur_funcdef;
 extern GVar *globals;
 extern Node *code[100];
-extern char *param_regs[];
 
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);

@@ -87,10 +87,12 @@ assert_expr_with_asset() {
 }
 
 # make && ./mycc "\
-# int g_memo[100];
 # int main() {
-#   g_memo[99] = 42;
-#   return g_memo[99];
+#   int a; int *b;
+#   a = 10;
+#   b = &a;
+#   putnum(b);
+#   return *b;
 # }" > tmp.s
 # cc -z noexecstack -c -o tmp.o tmp.s
 # cc -c -o asset.o asset.c
@@ -212,7 +214,7 @@ int fib(int a) {
 }"
 assert_with_asset 10 "\
 int main() {
-  int a; int b;
+  int a; int *b;
   a = 10;
   b = &a;
   putnum(b);

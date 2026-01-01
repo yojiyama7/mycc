@@ -1,6 +1,5 @@
 #include "mycc.h"
 
-char *param_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 int stmt_id;
 
 // アドレスをスタックにpushする(そのアドレスが示す先に代入などがされる)
@@ -40,7 +39,14 @@ void gen(Node *node) {
       return;
     }
     printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
+    solve_type(node);
+    if (calc_type_size(node->type) == 1) {
+      printf("  movsx rax, BYTE PTR [rax]\n");
+    } else if (calc_type_size(node->type) == 4) {
+      printf("  mov eax, [rax]\n");
+    } else {
+      printf("  mov rax, [rax]\n");
+    }
     printf("  push rax\n");
     return;
   case ND_GVAR:
@@ -49,7 +55,14 @@ void gen(Node *node) {
       return;
     }
     printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
+    solve_type(node);
+    if (calc_type_size(node->type) == 1) {
+      printf("  movsx rax, BYTE PTR [rax]\n");
+    } else if (calc_type_size(node->type) == 4) {
+      printf("  mov eax, [rax]\n");
+    } else {
+      printf("  mov rax, [rax]\n");
+    }
     printf("  push rax\n");
     return;
   case ND_ASSIGN:
@@ -57,7 +70,14 @@ void gen(Node *node) {
     gen(node->rhs);
     printf("  pop rdi\n");
     printf("  pop rax\n");
-    printf("  mov [rax], rdi\n");
+    solve_type(node->lhs);
+    if (calc_type_size(node->lhs->type) == 1) {
+      printf("  mov [rax], dil\n");
+    } else if (calc_type_size(node->lhs->type) == 4) {
+      printf("  mov [rax], edi\n");
+    } else {
+      printf("  mov [rax], rdi\n");
+    }
     printf("  push rdi\n"); // 代入式は右辺値と同じ値として評価される
     return;
   case ND_ADDR:
@@ -66,7 +86,14 @@ void gen(Node *node) {
   case ND_DEREF:
     gen(node->lhs);
     printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
+    solve_type(node);
+    if (calc_type_size(node->type) == 1) {
+      printf("  movsx rax, BYTE PTR [rax]\n");
+    } else if (calc_type_size(node->type) == 4) {
+      printf("  mov eax, [rax]\n");
+    } else {
+      printf("  mov rax, [rax]\n");
+    }
     printf("  push rax\n");
     return;
   case ND_EXPRSTMT:
@@ -143,7 +170,7 @@ void gen(Node *node) {
     cur = node->args;
     while (cur) {
       gen(cur);
-      printf("  pop %s\n", param_regs[i]);
+      printf("  pop %s\n", reg_names[i]);
       cur = cur->next;
       i++;
     }

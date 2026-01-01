@@ -1,5 +1,9 @@
 #include "mycc.h"
 
+char *reg_1_names[] = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
+char *reg_4_names[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+char *reg_names[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void error(char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -57,10 +61,16 @@ int main(int argc, char **argv) {
     LVar *lcur = code[i]->locals;
     while (lcur) {
       printf("  # ローカル変数名: %.*s\n", lcur->len, lcur->name);
-      if (lcur->reg) {
+      if (lcur->is_reg) {
         printf("  mov rax, rbp\n");
         printf("  sub rax, %d\n", lcur->offset);
-        printf("  mov [rax], %s\n", lcur->reg);
+        if (calc_type_size(lcur->type) == 1) {
+          printf("  mov [rax], %s\n", reg_1_names[lcur->reg_idx]); // ALを使いたい
+        } else if (calc_type_size(lcur->type) == 4) {
+          printf("  mov [rax], %s\n", reg_4_names[lcur->reg_idx]); // EAX
+        } else {
+          printf("  mov [rax], %s\n", reg_names[lcur->reg_idx]);
+        }
       }
       lcur = lcur->next;
     }

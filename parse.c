@@ -475,9 +475,9 @@ Node *stmt(void) {
     lvar->len = ident->len;
     node->defined_var = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-      lvar->offset = calc_type_mem_size(type);
+      lvar->offset = calc_type_size(type);
     } else {
-      lvar->offset = cur_funcdef->locals->offset + calc_type_mem_size(type);
+      lvar->offset = cur_funcdef->locals->offset + calc_type_size(type);
     }
     cur_funcdef->locals = lvar;
   } else if (consume_keyword(TK_RETURN)) {
@@ -527,11 +527,12 @@ Node *toplevel(void) {
       lvar->type = type;
       lvar->name = ident->str;
       lvar->len = ident->len;
-      lvar->reg = param_regs[i];
+      lvar->is_reg = true;
+      lvar->reg_idx = i;
       if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
-        lvar->offset = calc_type_mem_size(type);
+        lvar->offset = calc_type_size(type);
       } else {
-        lvar->offset = cur_funcdef->locals->offset +  calc_type_mem_size(type);
+        lvar->offset = cur_funcdef->locals->offset +  calc_type_size(type);
       }
       node->offset = lvar->offset;
       cur_funcdef->locals = lvar;
