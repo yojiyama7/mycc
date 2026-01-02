@@ -4,25 +4,71 @@ char *reg_1_names[] = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 char *reg_4_names[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 char *reg_names[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
+char *filename;
+
 void error(char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
 
   vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
   exit(1);
 }
 
 void error_at(char *loc, char *fmt, ...) {
   va_list ap;
-  va_start(ap, fmt);
 
-  int pos = loc - user_input;
-  fprintf(stderr, "%s\n", user_input);
-  fprintf(stderr, "%*s", pos, " ");
+  char *line = loc;
+  while (user_input < line && line[-1] != '\n'){
+    line--;
+  }
+
+  char *end = loc;
+  while (*end && *end != '\n') {
+    end++;
+  }
+  int line_num = 1;
+  for (char *p = user_input; p < line; p++) {
+    if (*p == '\n') {
+      line_num++;
+    }
+  }
+
+  int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
+  fprintf(stderr, "%.*s\n", (int)(end - line), line);
+
+  int pos = loc - line + indent;
+  fprintf(stderr, "%*s", pos, "");
   fprintf(stderr, "^ ");
+  va_start(ap, fmt);
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
   exit(1);
+}
+
+char *read_file(char *path) {
+  FILE *fp = fopen(path, "r");
+  if (fp == NULL) {
+    error("cannot open %s: %s", path, strerror(errno));
+  }
+
+  if (fseek(fp, 0, SEEK_END) == -1) {
+    error("%s: fseek: %s", path, strerror(errno));
+  }
+  size_t size = ftell(fp);
+  if (fseek(fp, 0, SEEK_SET) == -1) {
+    error("%s: fseek: %s", path, strerror(errno));
+  }
+
+  char *buf = calloc(size + 2, 1);
+  fread(buf, size, 1, fp);
+
+  if (size == 0 || buf[size-1] != '\n') {
+    buf[size++] = '\n';
+  }
+  buf[size] = '\0';
+  fclose(fp);
+  return buf;
 }
 
 int main(int argc, char **argv) {
@@ -31,8 +77,9 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-  user_input = argv[1];
-  token = tokenize(argv[1]);
+  filename = argv[1];
+  user_input = read_file(argv[1]);
+  token = tokenize(user_input);
   program();
   // for (int i = 0; code[i]; i++) {
   //   print_node(code[i]);

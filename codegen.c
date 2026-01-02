@@ -177,6 +177,7 @@ void gen(Node *node) {
       cur = cur->next;
       i++;
     }
+    printf("  mov al, 0\n"); // 可変長引数の関数を呼び出す際にalに浮動小数点数の個数を入れる -> 今の実装では常に0
     printf("  push rbp\n");     // XXX: rbpをスタックに積んで
     printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
     printf("  and rsp, -16\n");

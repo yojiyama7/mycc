@@ -3,7 +3,8 @@
 assert() {
   expected="$1"
   input="$2"
-  ./mycc "$input" > tmp.s
+  echo "$input" > tmp.c
+  ./mycc tmp.c > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
   ./tmp
   actual="$?"
@@ -19,7 +20,8 @@ assert() {
 assert_expr() {
   expected="$1"
   input="$2"
-  ./mycc "int main() { return $input; }" > tmp.s
+  echo "int main() { return $input; }" > tmp.c
+  ./mycc tmp.c > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
   ./tmp
   actual="$?"
@@ -35,7 +37,8 @@ assert_expr() {
 assert_stmts() {
   expected="$1"
   input="$2"
-  ./mycc "int main() { $input }" > tmp.s
+  echo "int main() { $input }" > tmp.c
+  ./mycc tmp.c > tmp.s
   cc -z noexecstack -o tmp tmp.s # -z noexecstack で何らかの警告を黙らせている
   ./tmp
   actual="$?"
@@ -51,7 +54,8 @@ assert_stmts() {
 assert_with_asset() {
   expected="$1"
   input="$2"
-  ./mycc "$input" > tmp.s
+  echo "$input" > tmp.c
+  ./mycc tmp.c > tmp.s
   cc -z noexecstack -c -o tmp.o tmp.s # -z noexecstack で何らかの警告を黙らせている
   cc -c -o asset.o asset.c
   cc -z noexecstack -o tmp tmp.o asset.o
@@ -71,7 +75,8 @@ assert_expr_with_asset() {
   expected="$1"
   input="$2"
 
-  ./mycc "int main() { return $input; }" > tmp.s
+  echo "int main() { return $input; }" > tmp.c
+  ./mycc tmp.c > tmp.s
   cc -z noexecstack -c -o tmp.o tmp.s # -z noexecstack で何らかの警告を黙らせている
   cc -c -o asset.o asset.c
   cc -z noexecstack -o tmp tmp.o asset.o
@@ -86,10 +91,11 @@ assert_expr_with_asset() {
   fi
 }
 
-# make && ./mycc '
+# make && echo '
 # int main() {
-#   return "hello"[1];
-# }' > tmp.s
+# }
+# ' > tmp.c
+# ./mycc tmp.c > tmp.s
 # cc -z noexecstack -c -o tmp.o tmp.s
 # cc -c -o asset.o asset.c
 # cc -z noexecstack -o tmp tmp.o asset.o
