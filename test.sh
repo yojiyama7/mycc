@@ -318,4 +318,14 @@ int main() {
 assert_stmts 0 "char a;"
 assert_stmts 3 "char a[3]; a[0] = -1; int b; b = 4; return a[0] + b;"
 assert_expr 101 '"hello"[1]'
+assert 0 "\
+int main(/* void */) {
+  int a; // variable a
+// comment
+  /*
+  multi
+  line
+  comments
+  */
+}"
 echo OK

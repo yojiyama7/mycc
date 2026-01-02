@@ -103,6 +103,20 @@ Token *tokenize(char *p) {
       p++;
       continue;
     }
+    if (strncmp(p, "//", 2) == 0) {
+      p += 2;
+      while (*p && *p != '\n')
+        p++;
+      continue;
+    }
+    if (strncmp(p, "/*", 2) == 0) {
+      char *q = strstr(p + 2, "*/");
+      if (q == NULL) {
+        error_at(p, "コメントが閉じられていません");
+      }
+      p = q + 2;
+      continue;
+    }
     if (memcmp(p, "==", 2) == 0 ||
         memcmp(p, "!=", 2) == 0 ||
         memcmp(p, "<=", 2) == 0 ||
