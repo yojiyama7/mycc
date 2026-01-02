@@ -41,11 +41,17 @@ int main(int argc, char **argv) {
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");
 
-  printf(".data\n");
   // グローバル変数の領域確保
+  printf(".data\n");
   for (GVar *gvar = globals; gvar; gvar = gvar->next) {
     printf("%.*s:\n", gvar->len, gvar->name);
     printf("  .zero %ld\n", calc_type_size(gvar->type));
+  }
+  // 文字列リテラル
+  printf(".section .rodata\n");
+  for (Node *str = string_literals; str; str = str->next) {
+    printf(".LC%d:\n", str->str_id);
+    printf("  .string \"%.*s\"\n", str->str_len, str->str);
   }
 
   printf(".text\n");

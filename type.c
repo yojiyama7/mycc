@@ -62,6 +62,9 @@ void solve_type(Node *node) {
   solve_type(node->rhs);
 
   switch (node->kind) {
+  case ND_STRING:
+    node->type = array_of(ty_char);
+    return;
   case ND_ADD:
     if (node->lhs->type->ptr_to && node->rhs->type == ty_int) {
       node->type = copy_type(node->lhs->type);

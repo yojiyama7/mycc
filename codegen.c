@@ -27,11 +27,13 @@ void gen(Node *node) {
   int sid;
   Node *cur;
 
-  // fprintf(stderr, "[%p]\n", node);
-  // error("HI!!!\n");
   switch (node->kind) {
   case ND_NUM:
     printf("  push %d\n", node->val);
+    return;
+  case ND_STRING:
+    printf("  lea rax, [rip + .LC%d]\n", node->str_id);
+    printf("  push rax\n");
     return;
   // LVAR単体を右辺値として処理する
   case ND_LVAR:

@@ -13,6 +13,7 @@ typedef enum {
   TK_NUM,
   TK_IDENT,
   TK_RESERVED,
+  TK_STRING,
   // keyword
   TK_RETURN,
   TK_IF,
@@ -38,6 +39,7 @@ struct s_Token {
 typedef enum {
   // リテラル[単項のr-value]
   ND_NUM,       // 123
+  ND_STRING,
   // l-value
   ND_LVAR,
   ND_GVAR,
@@ -110,6 +112,9 @@ struct s_Node {
                 // 単項演算子: 単体の被演算子
   Node *rhs;    // 二項演算子: 右辺
   int val;      // ND_NUM: 値
+  char *str;    // ND_STRING:
+  int str_len;  // ND_STRING:
+  int str_id;
   int offset;   // ND_LVAR: ローカル変数のオフセット値
   Token *token; // 元となったトークン
 
@@ -149,6 +154,7 @@ extern Token *token;
 extern char *user_input;
 extern Node *cur_funcdef;
 extern GVar *globals;
+extern Node *string_literals;
 extern Node *code[100];
 
 void error(char *fmt, ...);

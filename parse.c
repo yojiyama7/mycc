@@ -4,6 +4,7 @@ Token *token;
 char *user_input;
 Node *cur_funcdef;
 GVar *globals;
+Node *string_literals; // XXX: Node として保存しているが個別に型を用意した方がいいかも
 Node *code[100];
 
 bool equal_str(Token *tok, char *s) {
@@ -41,7 +42,16 @@ Token *consume_type() {
 
 Token *consume_ident(void) {
   if (token->kind != TK_IDENT) {
-    return false;
+    return NULL;
+  }
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
+Token *consume_string(void) {
+  if (token->kind != TK_STRING) {
+    return NULL;
   }
   Token *tok = token;
   token = token->next;
@@ -108,6 +118,20 @@ Token *tokenize(char *p) {
       p++;
       continue;
     }
+    if (*p == '"') {
+      cur = new_token(TK_STRING, cur, p);
+      p++;
+      while (*p && *p != '"') {
+        p++;
+      }
+      if (*p != '"') {
+        error("文字列が閉じられていません");
+      }
+      p++;
+      cur->len = p - cur->str;
+      // fprintf(stderr, "[%.*s]", cur->len, cur->str);
+      continue;
+    }
     if (isalpha(*p) || *p == '_') {
       // IDENT or KEYWORD
       cur = new_token(TK_IDENT, cur, p);
@@ -145,7 +169,7 @@ Token *tokenize(char *p) {
   }
   new_token(TK_EOF, cur, p);
   // for (Token* t = head.next; t->kind != TK_EOF; t = t->next) {
-  //   fprintf(stderr, "%s\n", t->str);
+  //   fprintf(stderr, "%.*s\n", t->len, t->str);
   // }
   return head.next;
 }
@@ -219,13 +243,25 @@ GVar *find_gvar(Token *tok) {
   return NULL;
 }
 
+int string_literal_id = 0;
 Node *primary(void) {
+  Token *tok = consume_string();
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_STRING;
+    node->str = tok->str + 1;
+    node->str_len = tok->len - 2;
+    node->str_id = string_literal_id++;
+    node->next = string_literals;
+    string_literals = node;
+    return node;
+  }
   if (consume("(")) {
     Node *node = expr();
     expect(")");
     return node;
   }
-  Token *tok = consume_ident();
+  tok = consume_ident();
   if (tok) {
     LVar *lvar = find_lvar(tok);
     // LVAR

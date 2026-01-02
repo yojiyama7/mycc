@@ -13,54 +13,57 @@ void print_node(Node *node) {
     return;
   }
   switch (node->kind) {
-  case ND_NUM: // 0
-    printfe(" ND_NUM(%d)", node->val);
+  case ND_NUM: 
+    printfe("ND_NUM(%d)", node->val);
     return;
-  case ND_LVAR: // 1
+  case ND_STRING:
+    printfe("ND_STRING(\"%.*s\")", node->str_len, node->str);
+    return;
+  case ND_LVAR:
     printfe("LVAR{ offset: %d }", node->offset);
     return;
-  case ND_GVAR: // 2
+  case ND_GVAR:
     printfe("GVAR{ name: %.*s }", node->gvar_name_len, node->gvar_name);
     return;
-  case ND_ADD: // 3
+  case ND_ADD: 
     printfe("ADD{ lhs: ");
     print_node(node->lhs);
     printfe(", rhs: ");
     print_node(node->rhs);
     printfe(" }");
     return;
-  case ND_SUB: // 4
+  case ND_SUB: 
     printfe("SUB{ lhs: ");
     print_node(node->lhs);
     printfe(", rhs: ");
     print_node(node->rhs);
     printfe(" }");
     return;
-  case ND_MUL: // 5
+  case ND_MUL: 
     printfe("MUL{ lhs: ");
     print_node(node->lhs);
     printfe(", rhs: ");
     print_node(node->rhs);
     printfe(" }");
     return;
-  case ND_ASSIGN: // 11
+  case ND_ASSIGN:
     printfe("ASSIGN{ lhs: ");
     print_node(node->lhs);
     printfe(", rhs: ");
     print_node(node->rhs);
     printfe(" }");
     return;
-  case ND_DEREF: // 12
+  case ND_DEREF: 
     printfe("DEREF{ lhs: ");
     print_node(node->lhs);
     printfe(" }");
     return;
-  case ND_ADDR: // 14
+  case ND_ADDR: 
     printfe("ADDR{ lhs: ");
     print_node(node->lhs);
     printfe(" }");
     return;
-  case ND_EXPRSTMT: // 15
+  case ND_EXPRSTMT:
     printfe("EXPRSTMT{ lhs: ");
     print_node(node->lhs);
     printfe(" }");
