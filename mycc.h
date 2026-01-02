@@ -21,6 +21,7 @@ typedef enum {
   TK_WHILE,
   TK_SIZEOF,
   TK_INT,
+  TK_CHAR,
   // ---
   TK_EOF,
 } TokenKind;
@@ -81,6 +82,7 @@ struct s_Type {
 };
 
 extern Type *ty_int;
+extern Type *ty_char;
 
 typedef struct s_LVar LVar;
 struct s_LVar {

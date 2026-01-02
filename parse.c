@@ -31,7 +31,7 @@ Token *consume_keyword(TokenKind tk) {
 }
 
 Token *consume_type() {
-  if (token->kind != TK_INT) {
+  if (!(token->kind == TK_INT || token->kind == TK_CHAR)) {
     return NULL;
   }
   Token *tok = token;
@@ -128,6 +128,8 @@ Token *tokenize(char *p) {
         cur->kind = TK_WHILE;
       } else if (equal_str(cur, "int")) {
         cur->kind = TK_INT;
+      } else if (equal_str(cur, "char")) {
+        cur->kind = TK_CHAR;
       } else if (equal_str(cur, "sizeof")) {
         cur->kind = TK_SIZEOF;
       }
@@ -390,6 +392,10 @@ Type *try_decl(Token **ident_token) {
   Type *type;
   if (tok->kind == TK_INT) {
     type = ty_int;
+  } else if (tok->kind == TK_CHAR) {
+    type = ty_char;
+  } else {
+    error("不正な型です");
   }
   while (consume("*")) {
     type = pointer_to(type);

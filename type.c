@@ -1,6 +1,7 @@
 #include "mycc.h"
 
-Type *ty_int = &(Type){ INT };
+Type *ty_int = &(Type){ INT, NULL, 0 };
+Type *ty_char = &(Type){ CHAR, NULL, 0 };
 
 size_t calc_type_size(Type *ty) {
   if (ty->core == CHAR) {
@@ -25,15 +26,19 @@ size_t calc_type_size(Type *ty) {
 // }
 
 Type *copy_type(Type *ty) {
-  Type *cloned = calloc(1, sizeof(Type));
-  cloned->core = ty->core;
   if (ty->core == PTR) {
+    Type *cloned = calloc(1, sizeof(Type));
+    cloned->core = ty->core;
     cloned->ptr_to = copy_type(ty->ptr_to);
+    return cloned;
   } else if (ty->core == ARRAY) {
+    Type *cloned = calloc(1, sizeof(Type));
+    cloned->core = ty->core;
     cloned->ptr_to = copy_type(ty->ptr_to);
     cloned->array_size = ty->array_size;
+    return cloned;
   }
-  return cloned;
+  return ty;
 }
 
 Type *pointer_to(Type *ty) {
