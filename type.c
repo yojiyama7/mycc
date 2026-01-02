@@ -17,14 +17,6 @@ size_t calc_type_size(Type *ty) {
   return 0;
 }
 
-// size_t calc_type_mem_size(Type *ty) {
-//   size_t size = calc_type_size(ty);
-//   if (size < 8) {
-//     size = 8;
-//   }
-//   return size;
-// }
-
 Type *copy_type(Type *ty) {
   if (ty->core == PTR) {
     Type *cloned = calloc(1, sizeof(Type));

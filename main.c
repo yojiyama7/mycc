@@ -25,49 +25,6 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
-// int indent_levels = 0;
-// void print_line(char *fmt, ...) {
-//   va_list ap;
-
-//   va_start(ap, fmt);
-//   if (indent_levels) {
-//     fprintf(stderr, "%*s", indent_levels, "");
-//   }
-//   vfprintf(stderr, fmt, ap);
-// }
-// void print_node(Node *node) {
-//   if (node == NULL) {
-//     print_line("(nil)");
-//     return;
-//   }
-//   print_line("{\n");
-//   indent_levels += 2;
-//   // print_line("kind: %d,\n", node->kind);
-//   if (node->kind == ND_FUNCDEF) {
-//     print_line("kind: FUNCDEF\n");
-//     print_line("body:\n");
-//     print_node(node->body);
-//     fprintf(stderr, ",\n");
-//   } else if (node->kind == ND_BLOCK) {
-//     print_line("kind: BLOCK\n");
-//     print_line("body:\n");
-//     print_node(node->body);
-//     fprintf(stderr, ",\n");
-//   } else if (node->kind == ND_VARDEF) {
-//     print_line("kind: VARDEF\n");
-//     print_line("lhs:\n");
-//     print_node(node->lhs);
-//     fprintf(stderr, ",\n");
-//     print_line("rhs:\n");
-//     print_node(node->rhs);
-//     fprintf(stderr, ",\n");
-//   } else {
-//     print_line("kind: %d,\n", node->kind);
-//   }
-//   indent_levels -= 2;
-//   print_line("}");
-// }
-
 int main(int argc, char **argv) {
 	if (argc != 2) {
     fprintf(stderr, "引数の個数が正しくありません\n");

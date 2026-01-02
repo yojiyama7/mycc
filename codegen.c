@@ -19,6 +19,7 @@ void gen_lval(Node *node) {
     printf("  push rax\n");
     return;
   }
+  // print_node(node);
   error("左辺値として有効なアドレスを取得できません");
 }
 

@@ -166,3 +166,6 @@ Type *array_of(Type *ty);
 void solve_type(Node *node);
 
 void gen(Node *node);
+
+
+void print_node(Node *node);

@@ -88,7 +88,7 @@ assert_expr_with_asset() {
 
 # make && ./mycc "\
 # int main() {
-#   char a[3]; a[0] = -1; b = 4; return *a;
+#   char a[3]; a[0] = -1; int b; b = 4; return a[0] + b;
 # }" > tmp.s
 # cc -z noexecstack -c -o tmp.o tmp.s
 # cc -c -o asset.o asset.c
@@ -310,6 +310,6 @@ int main() {
   return fib(32) == 2178309;
 }"
 assert_stmts 0 "char a;"
-# assert_stmts 3 "char a[3]; a[0] = -1; b = 4; return a[0] + b;"
+assert_stmts 3 "char a[3]; a[0] = -1; int b; b = 4; return a[0] + b;"
 
 echo OK

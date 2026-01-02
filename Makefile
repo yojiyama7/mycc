@@ -7,7 +7,8 @@ NAME := mycc
 SRCS := main.c \
         parse.c \
 				type.c \
-        codegen.c
+        codegen.c \
+				for_debug.c
 OBJS := $(addprefix objs/, $(SRCS:.c=.o))
 
 .PHONY: all

@@ -169,13 +169,13 @@ Node *new_add(Node *a, Node *b) {
   solve_type(a);
   solve_type(b);
 
-  if (a->type->core == INT && b->type->core == INT) {
+  if (!(a->type->ptr_to || b->type->ptr_to)) {
     return new_node(ND_ADD, a, b);
   }
   if (a->type->ptr_to && b->type->ptr_to) {
     error("ポインターとポインターを足すことはできません");
   }
-  if (a->type->core == INT && b->type->ptr_to) {
+  if (!a->type->core && b->type->ptr_to) {
     Node *tmp = a;
     a = b;
     b = tmp;
@@ -188,10 +188,10 @@ Node *new_sub(Node *a, Node *b) {
   solve_type(a);
   solve_type(b);
 
-  if (a->type->core == INT && b->type->core == INT) {
+  if (!(a->type->ptr_to || b->type->ptr_to)) {
     return new_node(ND_SUB, a, b);
   }
-  if (a->type->core == INT && b->type->ptr_to) {
+  if (!a->type->ptr_to && b->type->ptr_to) {
     error("整数からポインターを引くことはできません");
   }
   if (a->type->ptr_to && b->type->ptr_to) {
@@ -481,6 +481,7 @@ Node *stmt(void) {
     lvar->len = ident->len;
     node->defined_var = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+      // error("hi %d\n", calc_type_size(type));
       lvar->offset = calc_type_size(type);
     } else {
       lvar->offset = cur_funcdef->locals->offset + calc_type_size(type);
