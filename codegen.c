@@ -170,14 +170,17 @@ void gen(Node *node) {
     return ;
   case ND_CALL:
     int i = 0;
-    cur = node->args;
+    cur = node->args; // 最初は0番目の実引数
     while (cur) {
       gen(cur);
-      printf("  pop %s\n", reg_names[i]);
       cur = cur->next;
       i++;
     }
-    printf("  mov al, 0\n"); // 可変長引数の関数を呼び出す際にalに浮動小数点数の個数を入れる -> 今の実装では常に0
+    while (i > 0) {
+      printf("pop %s\n", reg_names[--i]);
+    }
+    
+    printf("  mov al, 0\n");    // 可変長引数の関数を呼び出す際にalに浮動小数点数の個数を入れる -> 今の実装では常に0
     printf("  push rbp\n");     // XXX: rbpをスタックに積んで
     printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
     printf("  and rsp, -16\n");

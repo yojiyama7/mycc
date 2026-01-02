@@ -71,6 +71,38 @@ char *read_file(char *path) {
   return buf;
 }
 
+void print_str_escaped(char *s, int len) {
+  int i = 0;
+  while (*s && i < len) {
+    switch (*s) {
+    case '\n':
+      printf("\\n");
+      break;
+    case '\r':
+      printf("\\r");
+      break;
+    case '\t':
+      printf("\\t");
+      break;
+    case '\"':
+      printf("\\\"");
+      break;
+    default:
+      if (32 <= *s && *s <= 126) {
+        putchar(*s);
+      } else {
+        printf("\\%03o", (unsigned char)*s);
+      }
+      break;
+    }
+    i++;
+    s++;
+  }
+  if (i != len) {
+    error("十分な長さのある文字列ではありません");
+  }
+}
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
     fprintf(stderr, "引数の個数が正しくありません\n");
@@ -81,9 +113,10 @@ int main(int argc, char **argv) {
   user_input = read_file(argv[1]);
   token = tokenize(user_input);
   program();
-  // for (int i = 0; code[i]; i++) {
-  //   print_node(code[i]);
-  // }
+  for (int i = 0; code[i]; i++) {
+    print_node(code[i]);
+  }
+  fprintf(stderr, "\n");
 
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");
@@ -96,9 +129,13 @@ int main(int argc, char **argv) {
   }
   // 文字列リテラル
   printf(".section .rodata\n");
-  for (Node *str = string_literals; str; str = str->next) {
-    printf(".LC%d:\n", str->str_id);
-    printf("  .string \"%.*s\"\n", str->str_len, str->str);
+  for (Node *n = string_literals; n; n = n->str_next) {
+    printf(".LC%d:\n", n->str_id);
+    // print_node(n);
+    // fprintf(stderr, "\n");
+    printf("  .string \"");
+    print_str_escaped(n->str, n->str_len);
+    printf("\"\n");
   }
 
   printf(".text\n");

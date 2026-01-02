@@ -116,6 +116,7 @@ struct s_Node {
   char *str;    // ND_STRING:
   int str_len;  // ND_STRING:
   int str_id;
+  Node *str_next; // XXX: 単体でstr部分を切り出すべき
   int offset;   // ND_LVAR: ローカル変数のオフセット値
   Token *token; // 元となったトークン
 

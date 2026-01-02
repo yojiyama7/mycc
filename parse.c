@@ -266,7 +266,7 @@ Node *primary(void) {
     node->str = tok->str + 1;
     node->str_len = tok->len - 2;
     node->str_id = string_literal_id++;
-    node->next = string_literals;
+    node->str_next = string_literals;
     string_literals = node;
     return node;
   }
