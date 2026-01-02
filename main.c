@@ -113,9 +113,9 @@ int main(int argc, char **argv) {
   user_input = read_file(argv[1]);
   token = tokenize(user_input);
   program();
-  for (int i = 0; code[i]; i++) {
-    print_node(code[i]);
-  }
+  // for (int i = 0; code[i]; i++) {
+  //   print_node(code[i]);
+  // }
   fprintf(stderr, "\n");
 
   printf(".intel_syntax noprefix\n");

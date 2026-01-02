@@ -1,226 +1,156 @@
-int main() {
-  printf("aaa %s %d\n", "hi", 1 + 1);
-  end_test();
+int test_variables() {
+  int a; int b; a = 3; b = 5;
+  test("1文字の変数", (a + 3) * b, 30);
+  int foo; int bar; int baz; int xxx;
+  foo = 1; bar = 2; baz = 3; xxx = 4;
+  test("複数文字の変数", baz * xxx + foo * bar, 14);
 }
 
-// assert_expr 15 '5*(9-6)'
-// assert_expr 4 '(3+5)/2'
-// assert_expr 6 '-2+(-2)+10'
-// assert_expr 1 '1 == 1'
-// assert_expr 1 '10 != 42'
-// assert_expr 0 "5 < 3"
-// assert_expr 1 "5 > 3"
-// assert_expr 1 "5 >= 3"
-// assert_expr 0 "5 <= 3"
-// assert_expr 1 "(0 == (0 + 3)) == 0"
-// # assert_expr 3 "a = 3"
-// assert_stmts 30 "int a; int b; a = 3; b = 5; return (a + 3) * b;"
-// assert_stmts 42 "\
-// int foo; int z;
-// foo = 1;
-// z = 1;
-// return z - foo + 42;"
-// assert_stmts 14 "int foo; int bar; int baz; int xxx;\
-// foo = 1; bar = 2; baz = 3; xxx = 4; return baz * xxx + foo * bar;"
-// assert_stmts 8 "return 8;"
-// assert_stmts 8 "return 8;\
-// return 4;"
-// assert_stmts 4 "\
-// if ( 1 == 1 )
-//   return 4;
-// return 3;"
-// assert_stmts 3 "\
-// if ( 1 == 0 )
-//   return 4;
-// return 3;"
-// assert_stmts 5 "\
-// if ( 1 == 0 )
-//   return 1;
-// if ( 1 == 0 )
-//   return 2;
-// if ( 1 == 0 )
-//   return 3;
-// if ( 1 == 0 )
-//   return 4;
-// return 5;"
-// assert_stmts 5 "\
-// if (1 == 0)
-//   return 3;
-// else
-//   return 5;"
-// assert_stmts 3 "\
-// if (1 != 0)
-//   return 3;
-// else
-//   return 5;"
-// assert_stmts 55 "\
-// int a; int b;
-// a = 0;
-// b = 0;
-// while (a < 10)
-//   b = b + (a = a + 1);
-// return b;"
-// assert_stmts 6 "\
-// int i;
-// for (i = 0; i < 10; i = i + 1)
-//   if (i * i > 30)
-//     return i;
-// return 42;"
-// assert_stmts 42 "{ return 42; }"
-// assert_stmts 32 "\
-// {
-//   int a; int b;
-//   a = 4;
-//   b = a + 4;
-//   return a * b;
-// }"
-// assert_expr_with_asset 42 "foo()"
-// assert_expr_with_asset 0 "bar()"
-// assert_expr_with_asset 3 "mod4(7)"
-// assert_expr_with_asset 0 "potato(1, 2, 3, 4, 5, 6) - 321"
-// assert 42 "\
-// int main() {
-//   return 42;
-// }"
-// assert 23 "\
-// int main() {
-//   return foo(23);
-// }
-// int foo(int a) {
-//   return a;
-// }"
-// assert 120 "\
-// int main() {
-//   return fact(5);
-// }
-// int fact(int a) {
-//   if (a == 0)
-//     return 1;
-//   return a * fact(a - 1);
-// }"
-// assert 233 "\
-// int main() {
-//   return fib(13);
-// }
-// int fib(int a) {
-//   if (a == 0)
-//     return 0;
-//   if (a == 1)
-//     return 1;
-//   return fib(a-1) + fib(a-2);
-// }"
-// assert_with_asset 10 "\
-// int main() {
-//   int a; int *b;
-//   a = 10;
-//   b = &a;
-//   putnum(b);
-//   return *b;
-// }"
-// assert 42 "\
-// int main() {
-//   int a; int *b; int **c;
-//   a = 10;
-//   b = &a;
-//   c = &b;
-//   **c = 42;
-//   return a;
-// }"
-// assert_with_asset 4 "\
-// int main() {
-//   int *a;
-//   a = alloc5(2, 4, 8, 16, 32);
-//   putnum(*a);
-//   putnum(*(a + 1));
-//   putnum(*(a + 2));
-//   putnum(*(a + 3));
-//   putnum(*(a + 4));
-//   return *(a + 1);
-// }"
-// assert_with_asset 32 "\
-// int main() {
-//   int *a;
-//   a = alloc5(2, 4, 8, 16, 32);
-//   a = a + 5;
-//   putnum(*(a - 1));
-//   putnum(*(a - 2));
-//   putnum(*(a - 3));
-//   putnum(*(a - 4));
-//   putnum(*(a - 5));
-//   return *(a - 1);
-// }"
-// assert_expr 4 "sizeof(42)"
-// assert_stmts 8 "int *a; return sizeof(a);"
-// # assert_expr 4 "sizeof(int)"
-// # assert_expr 8 "sizeof(int *)"
-// assert_stmts 0 "int a[10]; int **b[10];"
-// assert_with_asset 9 "\
-// int main() {
-//   int a[10];
-  
-//   int i;
-//   for (i = 0; i < 10; i = i + 1) {
-//     *(a + i) = i * i;
-//     putnum(*(a + i));
-//   }
-//   return *(a + 3);
-// }"
-// assert_with_asset 81 "\
-// int main() {
-//   int a[10];
+int test_return_1() {
+  return 8;
+}
+int test_return_2() {
+  return 4;
+  return 8;
+}
+int test_return() {
+  test("return", test_return_1(), 8);
+  test("複数のreturn", test_return_2(), 4);
+}
 
-//   int i;
-//   for (i = 0; i < 10; i = i + 1) {
-//     a[i] = i * i;
-//     putnum(i[a]);
-//   }
-//   return a[9];
-// }"
-// assert 0 "\
-// int g_memo[100];
-// int main() {
-//   return 0;
-// }"
-// assert 10 "\
-// int a;
-// int f() {
-//   int a;
-//   a = 10;
-//   return a;
-// }
-// int main() {
-//   a = 42;
-//   return f();
-// }"
-// assert 42 "\
-// int g_memo[100];
-// int main() {
-//   g_memo[99] = 42;
-//   return g_memo[99];
-// }"
-// # これができるの非常にプログラミング言語っぽい
-// assert 1 "\
-// int g_memo_fib[100];
-// int fib(int x) {
-//   if (x == 0) return 0;
-//   if (x == 1) return 1;
-//   if (g_memo_fib[x] != 0) return g_memo_fib[x];
-//   return fib(x-1) + fib(x-2);
-// }
-// int main() {
-//   return fib(32) == 2178309;
-// }"
-// assert_stmts 0 "char a;"
-// assert_stmts 3 "char a[3]; a[0] = -1; int b; b = 4; return a[0] + b;"
-// assert_expr 101 '"hello"[1]'
-// assert 0 "\
-// int main(/* void */) {
-//   int a; // variable a
-// // comment
-//   /*
-//   multi
-//   line
-//   comments
-//   */
-// }"
-// echo OK
+int fact(int a) {
+  if (a == 0)
+    return 1;
+  return a * fact(a - 1);
+}
+int fib(int a) {
+  if (a == 0) return 0;
+  if (a == 1) return 1;
+  return fib(a-1) + fib(a-2);
+}
+
+int g_memo_fib[100];
+int fib_2(int a) {
+  if (a == 0) return 0;
+  if (a == 1) return 1;
+  if ((a < 100) * g_memo_fib[a]) return g_memo_fib[a];
+  return fib_2(a-1) + fib_2(a-2);
+}
+
+int main() {
+  test("整数リテラル", 0, 0);
+  test("整数リテラル 2", 42, 42);
+  test("足し算 1", 5+20-4, 21);
+  test("足し算 2", 40 - 13 + 5, 32);
+  test("掛け算", 5+6*7, 47);
+  test("割り算", 10/3, 3);
+  test("+x, -x", +2+(-2)+10, 10);
+  test("等号", 1 == 1, 1);
+  test("not equal", 10 != 42, 1);
+  test("不等号 <", 5 < 3, 0);
+  test("不等号 >", 5 > 3, 1);
+  test("不等号 >=", 5 >= 3, 1);
+  test("不等号 <=", 5 <= 3, 0);
+  test("多重の丸括弧", (0 == (0 + 3)) == 0, 1);
+  test_variables();
+  test_return();
+  int a;
+  a = 1;
+  if (a == 1)
+    a = 2;
+  test("if文(trueの時)", a, 2);
+  a = 1;
+  if (a == 10)
+    a = 2;
+  test("if文(falseの時)", a, 1);
+  a = 1;
+  if (a == 1)
+    a = 2;
+  else
+    a = 3;
+  test("if-else文(trueの時)", a, 2);
+  a = 1;
+  if (a == 10)
+    a = 2;
+  else
+    a = 3;
+  test("if-else文(falseの時)", a, 3);
+  a = 1;
+  int b;
+  b = 0;
+  while (a < 10){
+    b = b + a;
+    a = a + 1;
+  }
+  test("while文", b, 45);
+  b = 1;
+  for (a = 1; a < 5; a = a + 1) {
+    b = b * a;
+  }
+  test("for文", b, 24);
+  {
+    a = 1; b = 1;
+    a = a + b;
+  }
+  test("block文", a, 2);
+  test("関数呼び出し", foo(), 42);
+  test("関数呼び出し(副作用あり)", bar(), 0);
+  test("関数呼び出し(引数1つ)", mod4(7), 3);
+  test("関数呼び出し(引数6つ)", potato(1, 2, 3, 4, 5, 6), 321);
+  test("再帰関数(factorial)", fact(5), 120);
+  test("fib(メモ化なし)", fib(13), 233);
+  int *p;
+  a = 10;
+  p = &a;
+  test("アドレス演算子 & デリファレンス演算子", *p, 10);
+  int **pp;
+  a = 42;
+  p = &a;
+  pp = &p;
+  test("2重デリファレンス", **pp, 42);
+  p = alloc5(2, 4, 8, 16, 32);
+  test("アドレス + 整数", *p, 2);
+  test("...", *(p + 1), 4);
+  test("...", *(p + 2), 8);
+  test("...", *(p + 3), 16);
+  test("...", *(p + 4), 32);
+  p = alloc5(2, 4, 8, 16, 32);
+  p = p + 5;
+  test("アドレス + 整数", *(p - 1), 32);
+  test("...", *(p - 2), 16);
+  test("...", *(p - 3), 8);
+  test("...", *(p - 4), 4);
+  test("...", *(p - 5), 2);
+  test("sizeof int", sizeof(42), 4);
+  test("sizeof ptr", sizeof(p+100), 8);
+  // "sizeof(int)"
+  // "sizeof(int *)"
+  int arr_int[10];
+  int **arr_ptr_ptr_int[10];
+  test("配列の定義", 1, 1);
+  int arr[10];
+  for (a = 0; a < 10; a = a + 1) {
+    *(arr + a) = a * a;
+    putnum(*(arr + a));
+  }
+  test("配列にポインタ演算でアクセス", *(arr + 3), 9);
+  for (a = 0; a < 10; a = a + 1) {
+    arr[a] = (10-a) * (10-a);
+  }
+  test("配列に添字演算でアクセス", arr[6], 16); // テストそれぞれが独立していなくていやな感じ
+  test("グローバル変数を利用した再帰関数のメモ化", fib(32), 2178309);
+  char c;
+  test("char型変数の定義", 1, 1);
+  char chars[3];
+  chars[0] = -1; b = 4;
+  test("char型の演算", chars[0] + b, 3);
+  test("文字列リテラル", "hello"[1], 101);
+  // コメント
+  /*
+  multi
+  line
+  comments
+  */
+  test("コメント", 1, 1);
+  end_test();
+}

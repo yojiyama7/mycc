@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ./mycc test.c > test.s
-cc -z noexecstack test.s test_asset.c -o test
+cc -z noexecstack test.s test_asset.c asset.c -o test
 ./test
 if [ $? -eq 0 ]; then
   echo OK
