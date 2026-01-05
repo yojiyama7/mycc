@@ -119,12 +119,13 @@ struct s_Node {
   NodeKind kind;
   Token *token; // 元となったトークン
   // 式のためのフィールド
+  int val;      // ND_NUM: 値
+  String *string;  // ND_STRING
+  GVar *gvar;   // ND_GVAR:
+  int offset;   // ND_LVAR: ローカル変数のオフセット値
   Node *lhs;    // 二項演算子: 左辺
                 // 単項演算子: 単体の被演算子
   Node *rhs;    // 二項演算子: 右辺
-  int val;      // ND_NUM: 値
-  String *string;  // ND_STRING
-  int offset;   // ND_LVAR: ローカル変数のオフセット値
 
   Type *type; // expr系: 評価された時の型
               // FUNCDEF: 関数の返り値の型
@@ -139,9 +140,6 @@ struct s_Node {
   Node *inc;  // FOR:         更新式
   Node *body; // BLOCK:       中身の文たちのうち1番目
               // FUNCDEF:     関数の中身の文
-  
-  char *gvar_name;
-  int gvar_name_len;
 
   char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
   int func_name_len;  // CALL, FUNCDEF

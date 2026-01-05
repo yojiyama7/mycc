@@ -23,7 +23,7 @@ void print_node(Node *node) {
     printfe("LVAR{ offset: %d }", node->offset);
     return;
   case ND_GVAR:
-    printfe("GVAR{ name: %.*s }", node->gvar_name_len, node->gvar_name);
+    printfe("GVAR{ name: %.*s }", node->gvar->len, node->gvar->name);
     return;
   case ND_ADD: 
     printfe("ADD{ lhs: ");

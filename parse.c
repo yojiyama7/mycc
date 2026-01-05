@@ -292,8 +292,7 @@ Node *primary(void) {
     if (gvar) {
       Node *node = calloc(1, sizeof(Node));
       node->kind = ND_GVAR;
-      node->gvar_name = gvar->name;
-      node->gvar_name_len = gvar->len;
+      node->gvar = gvar;
       node->type = gvar->type;
       return node;
     }

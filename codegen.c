@@ -15,7 +15,7 @@ void gen_lval(Node *node) {
     return;
   }
   if (node->kind == ND_GVAR) {
-    printf("  lea rax, %.*s[rip]\n", node->gvar_name_len, node->gvar_name);
+    printf("  lea rax, %.*s[rip]\n", node->gvar->len, node->gvar->name);
     printf("  push rax\n");
     return;
   }
