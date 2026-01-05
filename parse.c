@@ -2,7 +2,7 @@
 
 Token *token;
 char *user_input;
-Node *cur_funcdef;
+Func *cur_funcdef;
 GVar *globals;
 String *string_literals; // XXX: Node として保存しているが個別に型を用意した方がいいかも
 Node *code[100];
@@ -298,8 +298,7 @@ Node *primary(void) {
     }
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FUNCNAME;
-    node->func_name = tok->str;
-    node->func_name_len = tok->len;
+    node->token = tok;
     return node;
   }
 
@@ -317,8 +316,8 @@ Node *postfix(void) {
       if (node->kind == ND_LVAR) { // QUESTION: これっている？ // 型で見た方がいいかも
         error("ローカル変数を呼び出ししています");
       }
-      nd->func_name = node->func_name;
-      nd->func_name_len = node->func_name_len;
+      nd->func_name = node->token->str;
+      nd->func_name_len = node->token->len;
       Node head; head.next = NULL;
       Node *cur = &head;
       if (!consume(")")) {
@@ -564,9 +563,10 @@ Node *toplevel(void) {
     // FUNC_DEF
     node->kind = ND_FUNCDEF;
     node->type = type;
-    node->func_name = ident->str;
-    node->func_name_len = ident->len;
-    cur_funcdef = node; // 再起的に呼ばれないので問題ない
+    node->defined_func = calloc(1, sizeof(Func));
+    node->defined_func->name = ident->str;
+    node->defined_func->len = ident->len;
+    cur_funcdef = node->defined_func; // 再起的に呼ばれないので問題ない
     Node head; head.next = NULL;
     Node *cur = &head;
     int i = 0;
@@ -604,7 +604,7 @@ Node *toplevel(void) {
     if (i == 6) {
       error_at(token->str, "引数が6つ超過あります");
     }
-    node->body = stmt();
+    node->defined_func->body = stmt();
     return node;
   }
   // GVAR;
@@ -634,6 +634,7 @@ void program(void) {
 
   while (!at_eof()) {
     code[i++] = toplevel();
+
     if (i >= 100) {
       error_at(token->str, "コードが多すぎます");
     }

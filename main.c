@@ -143,15 +143,15 @@ int main(int argc, char **argv) {
     if (code[i]->kind != ND_FUNCDEF) {
       continue;
     }
-    printf("%.*s:\n", code[i]->func_name_len, code[i]->func_name);
+    printf("%.*s:\n", code[i]->defined_func->len, code[i]->defined_func->name);
 
     // プロローグ
     printf("  push rbp\n"); // rpbの保持
     printf("  mov rbp, rsp\n");
-    if (code[i]->locals) {
-      printf("  sub rsp, %d\n", code[i]->locals->offset);
+    if (code[i]->defined_func->locals) {
+      printf("  sub rsp, %d\n", code[i]->defined_func->locals->offset);
     }
-    LVar *lcur = code[i]->locals;
+    LVar *lcur = code[i]->defined_func->locals;
 
     while (lcur) {
       printf("  # ローカル変数名: %.*s\n", lcur->len, lcur->name);
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
     }
     printf("  # vvv\n");
 
-    gen(code[i]->body);
+    gen(code[i]->defined_func->body);
 
     // エピローグ
     printf("  # ^^^\n");

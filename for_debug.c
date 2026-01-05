@@ -101,7 +101,7 @@ void print_node(Node *node) {
     return;
   case ND_FUNCDEF:
     printfe("FUNCDEF{ name: %.*s, lvar: [", node->func_name_len, node->func_name);
-    for (LVar *lvar = node->locals; lvar; lvar = lvar->next) {
+    for (LVar *lvar = node->defined_func->locals; lvar; lvar = lvar->next) {
       printfe("LVAR(name: %.*s, offset: %d) ", lvar->len, lvar->name, lvar->offset);
     }
     printfe("], body: [ ");

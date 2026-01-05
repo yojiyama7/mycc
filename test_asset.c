@@ -10,7 +10,7 @@ void test(char *msg, int expr, int expected) {
   } else {
     printf("%s(%d): expr != expected (%d != %d)\n", msg, test_id, expr, expected);
     is_failed = 1;
-  } 
+  }
   test_id++;
 }
 
