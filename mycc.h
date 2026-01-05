@@ -121,12 +121,13 @@ struct s_Func {
   LVar *locals;
   char *name;
   int len;
+  Type *ret;
   Node *body;
 };
 
 struct s_Node {
   NodeKind kind;
-  Token *token; // 元となったトークン
+  Token *token; // 元となったトークン(必要な時にセットしておく)
   // 式のためのフィールド
   int val;      // ND_NUM: 値
   String *string;  // ND_STRING
@@ -153,9 +154,9 @@ struct s_Node {
   Node *args;         // CALL: 実引数(expr)たちのうち1番目
   // XXX: func が冗長だな、、、
   Func *defined_func;
-  // LVar *locals;       // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
-  char *func_name;    // CALL
-  int func_name_len;  // CALL
+  // LVar *locals;     // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
+  char *call_name;     // CALL
+  int call_len;   // CALL
   LVar *defined_lvar;  // LVARDEF: 自身(LVARDEF型のあるNode)が定義した変数
   GVar *defined_gvar;  // GVARDEF
 
@@ -168,8 +169,8 @@ extern char *reg_1_names[];
 extern char *reg_4_names[];
 extern char *reg_names[];
 
-extern Token *token;
 extern char *user_input;
+extern Token *token;
 extern Func *cur_funcdef;
 extern GVar *globals;
 extern String *string_literals;

@@ -316,8 +316,8 @@ Node *postfix(void) {
       if (node->kind == ND_LVAR) { // QUESTION: これっている？ // 型で見た方がいいかも
         error("ローカル変数を呼び出ししています");
       }
-      nd->func_name = node->token->str;
-      nd->func_name_len = node->token->len;
+      nd->call_name = node->token->str;
+      nd->call_len = node->token->len;
       Node head; head.next = NULL;
       Node *cur = &head;
       if (!consume(")")) {
@@ -562,8 +562,8 @@ Node *toplevel(void) {
   if (consume("(")) {
     // FUNC_DEF
     node->kind = ND_FUNCDEF;
-    node->type = type;
     node->defined_func = calloc(1, sizeof(Func));
+    node->defined_func->ret = type;
     node->defined_func->name = ident->str;
     node->defined_func->len = ident->len;
     cur_funcdef = node->defined_func; // 再起的に呼ばれないので問題ない

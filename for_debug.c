@@ -66,7 +66,7 @@ void print_node(Node *node) {
     printfe(" }");
     return;
   case ND_CALL:
-    printfe("CALL{ name: %.*s, args: [ ", node->func_name_len, node->func_name);
+    printfe("CALL{ name: %.*s, args: [ ", node->call_len, node->call_name);
     for (Node *n = node->args; n; n = n->next) {
       print_node(n);
       printfe(", ");
@@ -100,7 +100,7 @@ void print_node(Node *node) {
     printfe("] }");
     return;
   case ND_FUNCDEF:
-    printfe("FUNCDEF{ name: %.*s, lvar: [", node->func_name_len, node->func_name);
+    printfe("FUNCDEF{ name: %.*s, lvar: [", node->call_len, node->call_name);
     for (LVar *lvar = node->defined_func->locals; lvar; lvar = lvar->next) {
       printfe("LVAR(name: %.*s, offset: %d) ", lvar->len, lvar->name, lvar->offset);
     }
@@ -112,7 +112,7 @@ void print_node(Node *node) {
     printfe("] }");
     return;
   case ND_FUNCNAME:
-    printfe("FUNCNAME{ name: %.*s }", node->func_name_len, node->func_name);
+    printfe("FUNCNAME{ name: %.*s }", node->call_len, node->call_name);
     return;
   default:
     printfe("未知のノードです, kind=%d\n", node->kind);

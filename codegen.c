@@ -184,7 +184,7 @@ void gen(Node *node) {
     printf("  push rbp\n");     // XXX: rbpをスタックに積んで
     printf("  mov rbp, rsp\n"); // rbpにrspを一時保存して
     printf("  and rsp, -16\n");
-    printf("  call %.*s\n", node->func_name_len, node->func_name);
+    printf("  call %.*s\n", node->call_len, node->call_name);
     printf("  mov rsp, rbp\n"); // rspを復元して
 	  printf("  pop rbp\n");      // rbpを復元
     printf("  push rax\n");

@@ -1068,8 +1068,8 @@ struct s_Node {
   Node *init;
   Node *inc;
   Node *body;
-  char *func_name;
-  int func_name_len;
+  char *call_name;
+  int call_len;
   char *gvar_name;
   int gvar_name_len;
   Node *args;
@@ -1217,7 +1217,7 @@ int main(int argc, char **argv) {
     if (code[i]->kind != ND_FUNCDEF) {
       continue;
     }
-    printf("%.*s:\n", code[i]->func_name_len, code[i]->func_name);
+    printf("%.*s:\n", code[i]->call_len, code[i]->call_name);
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
     if (code[i]->locals) {
