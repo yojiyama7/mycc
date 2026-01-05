@@ -129,17 +129,18 @@ struct s_Node {
   NodeKind kind;
   Token *token; // 元となったトークン(必要な時にセットしておく)
   // 式のためのフィールド
-  int val;      // ND_NUM: 値
-  String *string;  // ND_STRING
-  int offset;   // ND_LVAR: ローカル変数のオフセット値
-  GVar *gvar;   // ND_GVAR:
+  Type   *type;   // expr系: 評価された時の型
+  int     val;    // ND_NUM: 値
+  String *string; // ND_STRING
+  int     offset; // ND_LVAR: ローカル変数のオフセット値
+  GVar   *gvar;   // ND_GVAR:
+  Node   *lhs;    // 二項演算子: 左辺
+                  // 単項演算子: 単体の被演算子
+  Node   *rhs;    // 二項演算子: 右辺
   // Func *call;
-  Node *lhs;    // 二項演算子: 左辺
-                // 単項演算子: 単体の被演算子
-  Node *rhs;    // 二項演算子: 右辺
-
-  Type *type; // expr系: 評価された時の型
-              // FUNCDEF: 関数の返り値の型
+  char   *call_name;  // CALL
+  int     call_len;   // CALL
+  Node   *args;       // CALL: 実引数(expr)たちのうち1番目 (with next)
 
   // 制御構文
   Node *cond; // IF | IFELSE | FOR | WHILE:
@@ -149,14 +150,9 @@ struct s_Node {
   Node *els;  // IFELSE:      条件を満たさなかった際に実行される文
   Node *init; // FOR:         初期化式
   Node *inc;  // FOR:         更新式
-  Node *body; // BLOCK:       中身の文たちのうち1番目
+  Node *body; // BLOCK:       中身の文たちのうち1番目 (with next)
 
-  Node *args;         // CALL: 実引数(expr)たちのうち1番目
-  // XXX: func が冗長だな、、、
-  Func *defined_func;
-  // LVar *locals;     // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
-  char *call_name;     // CALL
-  int call_len;   // CALL
+  Func *defined_func;  // FUNCDEF
   LVar *defined_lvar;  // LVARDEF: 自身(LVARDEF型のあるNode)が定義した変数
   GVar *defined_gvar;  // GVARDEF
 
