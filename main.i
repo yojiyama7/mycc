@@ -1074,7 +1074,7 @@ struct s_Node {
   int gvar_name_len;
   Node *args;
   LVar *locals;
-  LVar *defined_var;
+  LVar *defined_lvar;
   GVar *defined_gvar;
   Node *next;
 };

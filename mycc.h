@@ -149,7 +149,7 @@ struct s_Node {
   Node *args;         // CALL: 実引数(expr)たちのうち1番目
   // XXX: func が冗長だな、、、
   LVar *locals;       // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
-  LVar *defined_var;  // VARDEF: 自身(VARDEF型のあるNode)が定義した変数
+  LVar *defined_lvar;  // VARDEF: 自身(VARDEF型のあるNode)が定義した変数
   GVar *defined_gvar;
 
   Node *next; // BLOCK: body を先頭とする stmt たち

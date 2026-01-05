@@ -531,7 +531,7 @@ Node *stmt(void) {
     lvar->type = type;
     lvar->name = ident->str;
     lvar->len = ident->len;
-    node->defined_var = lvar;
+    node->defined_lvar = lvar;
     if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
       // error("hi %d\n", calc_type_size(type));
       lvar->offset = calc_type_size(type);

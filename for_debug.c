@@ -89,7 +89,7 @@ void print_node(Node *node) {
     printfe(" }");
     return;
   case ND_VARDEF:
-    printfe("VARDEF{ name: %.*s, offset: %d }", node->defined_var->len, node->defined_var->name, node->defined_var->offset);
+    printfe("VARDEF{ name: %.*s, offset: %d }", node->defined_lvar->len, node->defined_lvar->name, node->defined_lvar->offset);
     return;
   case ND_BLOCK:
     printfe("BLOCK{ body: [ ");
