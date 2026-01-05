@@ -521,7 +521,7 @@ Node *stmt(void) {
   Type *type = try_decl(&ident);
   if (type) {
     node = calloc(1, sizeof(Node));
-    node->kind = ND_VARDEF;
+    node->kind = ND_LVARDEF;
     if (find_lvar(ident)) {
       error("既に定義された変数名です");
     }

@@ -63,7 +63,7 @@ typedef enum {
   // ;で終わる文
   ND_EXPRSTMT,  // <#r-value#>;
   ND_RETURN,    // return <#r-value#>;
-  ND_VARDEF,    // <#type#> <#decl#>;
+  ND_LVARDEF,    // <#type#> <#decl#>;
   ND_GVARDEF,
   // 制御構文
   ND_IF,
@@ -147,8 +147,8 @@ struct s_Node {
   Node *args;         // CALL: 実引数(expr)たちのうち1番目
   // XXX: func が冗長だな、、、
   LVar *locals;       // FUNCDEF: ローカル変数(LVar)たちのうち 最後に定義された要素
-  LVar *defined_lvar;  // VARDEF: 自身(VARDEF型のあるNode)が定義した変数
-  GVar *defined_gvar;
+  LVar *defined_lvar;  // LVARDEF: 自身(LVARDEF型のあるNode)が定義した変数
+  GVar *defined_gvar;  // GVARDEF
 
   Node *next; // BLOCK: body を先頭とする stmt たち
               // CALL:  args を先頭とする expr たち

@@ -111,7 +111,7 @@ void gen(Node *node) {
     printf("  pop rbp\n");
     printf("  ret # <<< ND_RETURN\n");
     return ;
-  case ND_VARDEF:
+  case ND_LVARDEF:
     return;
   case ND_GVARDEF:
     return;
