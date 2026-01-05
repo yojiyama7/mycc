@@ -129,12 +129,12 @@ int main(int argc, char **argv) {
   }
   // 文字列リテラル
   printf(".section .rodata\n");
-  for (Node *n = string_literals; n; n = n->str_next) {
-    printf(".LC%d:\n", n->str_id);
+  for (String *s = string_literals; s; s = s->next) {
+    printf(".LC%d:\n", s->id);
     // print_node(n);
     // fprintf(stderr, "\n");
     printf("  .string \"");
-    print_str_escaped(n->str, n->str_len);
+    print_str_escaped(s->str, s->len);
     printf("\"\n");
   }
 

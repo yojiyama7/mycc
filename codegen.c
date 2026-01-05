@@ -32,7 +32,7 @@ void gen(Node *node) {
     printf("  push %d\n", node->val);
     return;
   case ND_STRING:
-    printf("  lea rax, [rip + .LC%d]\n", node->str_id);
+    printf("  lea rax, [rip + .LC%d]\n", node->string->id);
     printf("  push rax\n");
     return;
   // LVAR単体を右辺値として処理する

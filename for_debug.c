@@ -17,7 +17,7 @@ void print_node(Node *node) {
     printfe("ND_NUM(%d)", node->val);
     return;
   case ND_STRING:
-    printfe("ND_STRING{ str: \"%.*s\", id: %d }", node->str_len, node->str, node->str_id);
+    printfe("ND_STRING{ str: \"%.*s\", id: %d }", node->string->len, node->string->str, node->string->id);
     return;
   case ND_LVAR:
     printfe("LVAR{ offset: %d }", node->offset);

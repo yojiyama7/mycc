@@ -106,23 +106,30 @@ struct s_GVar {
   int len;
 };
 
+typedef struct s_String String;
+struct s_String {
+  String *next;
+  char *str;
+  int len;
+  int id;
+};
+
 typedef struct s_Node Node;
 struct s_Node {
   NodeKind kind;
+  Token *token; // 元となったトークン
+  // 式のためのフィールド
   Node *lhs;    // 二項演算子: 左辺
                 // 単項演算子: 単体の被演算子
   Node *rhs;    // 二項演算子: 右辺
   int val;      // ND_NUM: 値
-  char *str;    // ND_STRING:
-  int str_len;  // ND_STRING:
-  int str_id;
-  Node *str_next; // XXX: 単体でstr部分を切り出すべき
+  String *string;  // ND_STRING
   int offset;   // ND_LVAR: ローカル変数のオフセット値
-  Token *token; // 元となったトークン
 
   Type *type; // expr系: 評価された時の型
               // FUNCDEF: 関数の返り値の型
 
+  // 制御構文
   Node *cond; // IF | IFELSE | FOR | WHILE:
               //              条件式
   Node *then; // IF | FOR | WHILE:
@@ -132,10 +139,12 @@ struct s_Node {
   Node *inc;  // FOR:         更新式
   Node *body; // BLOCK:       中身の文たちのうち1番目
               // FUNCDEF:     関数の中身の文
-  char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
-  int func_name_len;  // CALL, FUNCDEF
+  
   char *gvar_name;
   int gvar_name_len;
+
+  char *func_name;    // CALL, FUNCDEF // XXX: 問題ありそう Node *func; にしたいけども一旦許容 incrimental にいこう
+  int func_name_len;  // CALL, FUNCDEF
 
   Node *args;         // CALL: 実引数(expr)たちのうち1番目
   // XXX: func が冗長だな、、、
@@ -156,7 +165,7 @@ extern Token *token;
 extern char *user_input;
 extern Node *cur_funcdef;
 extern GVar *globals;
-extern Node *string_literals;
+extern String *string_literals;
 extern Node *code[100];
 
 void error(char *fmt, ...);

@@ -4,7 +4,7 @@ Token *token;
 char *user_input;
 Node *cur_funcdef;
 GVar *globals;
-Node *string_literals; // XXX: Node として保存しているが個別に型を用意した方がいいかも
+String *string_literals; // XXX: Node として保存しているが個別に型を用意した方がいいかも
 Node *code[100];
 
 bool equal_str(Token *tok, char *s) {
@@ -263,11 +263,13 @@ Node *primary(void) {
   if (tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_STRING;
-    node->str = tok->str + 1;
-    node->str_len = tok->len - 2;
-    node->str_id = string_literal_id++;
-    node->str_next = string_literals;
-    string_literals = node;
+    String *string = calloc(1, sizeof(String));
+    string->str = tok->str + 1;
+    string->len = tok->len - 2;
+    string->id = string_literal_id++;
+    string->next = string_literals;
+    string_literals = string;
+    node->string = string;
     return node;
   }
   if (consume("(")) {
