@@ -1,3 +1,38 @@
+int my_strlen(char *s) {
+  int a;
+  a = 0;
+  while (*s) {
+    s = s + 1;
+    a = a + 1;
+  }
+  return a;
+}
+
+// int my_strncmp(char *a, char *b, int n) {
+//   int i;
+//   for (i = 0; i < n; i = i + 1) {
+//     // a[i] が 0 ならここ
+//     if (a[i] == 0/*'\0'*/) return a[i] - b[i];
+//     // b[i] が 0 ならここ (a[i]は非zeroでb[i]と等しくない)
+//     if (a[i] != b[i]) return a[i] - b[i];
+//   }
+//   return 0;
+// }
+
+// char *my_strstr(char *hey, char *needle) {
+//   int hl; int nl; int i;
+//   hl = my_strlen(hey);
+//   nl = my_strlen(needle);
+//   if (nl > hl) return 0/*NULL*/;
+//   for (i = 0; i + nl <= hl; i = i + 1) {
+//     if (my_strncmp(hey + i, needle, nl) == 0)
+//       return hey + i;
+//   }
+//   return 0/*NULL*/;
+// }
+
+// ========
+
 int test_variables() {
   int a; int b; a = 3; b = 5;
   test("1文字の変数", (a + 3) * b, 30);

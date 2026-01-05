@@ -105,10 +105,9 @@ assert_expr_with_asset() {
 }
 
 make && echo '
+int my_strncmp(char *a, char *b, int n) {
+}
 int main() {
-  char *msg;
-  msg = "Hello, World!";
-  printf("%s\n", msg);
 }
 ' > tmp.c
 ./mycc tmp.c > tmp.s

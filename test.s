@@ -113,6 +113,99 @@ g_memo_fib:
 .LC0:
   .string "1\346\226\207\345\255\227\343\201\256\345\244\211\346\225\260"
 .text
+my_strlen:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 12
+  # ローカル変数名: a
+  # ローカル変数名: s
+  mov rax, rbp
+  sub rax, 8
+  mov [rax], rdi
+  # vvv
+  mov rax, rbp
+  sub rax, 12
+  push rax
+  push 0
+  pop rdi
+  pop rax
+  mov [rax], edi
+  push rdi
+  pop rax
+.Lbegin0:
+  mov rax, rbp
+  sub rax, 8
+  push rax
+  pop rax
+  mov rax, [rax]
+  push rax
+  pop rax
+  movsx rax, BYTE PTR [rax]
+  push rax
+  pop rax
+  cmp rax, 0
+  je  .Lend0
+  mov rax, rbp
+  sub rax, 8
+  push rax
+  mov rax, rbp
+  sub rax, 8
+  push rax
+  pop rax
+  mov rax, [rax]
+  push rax
+  push 1
+  push 1
+  pop rdi
+  pop rax
+  imul rax, rdi
+  push rax
+  pop rdi
+  pop rax
+  add rax, rdi
+  push rax
+  pop rdi
+  pop rax
+  mov [rax], rdi
+  push rdi
+  pop rax
+  mov rax, rbp
+  sub rax, 12
+  push rax
+  mov rax, rbp
+  sub rax, 12
+  push rax
+  pop rax
+  mov eax, [rax]
+  push rax
+  push 1
+  pop rdi
+  pop rax
+  add rax, rdi
+  push rax
+  pop rdi
+  pop rax
+  mov [rax], edi
+  push rdi
+  pop rax
+  jmp .Lbegin0
+.Lend0:
+# >>> ND_RETURN
+  mov rax, rbp
+  sub rax, 12
+  push rax
+  pop rax
+  mov eax, [rax]
+  push rax
+  pop rax
+  mov rsp, rbp
+  pop rbp
+  ret # <<< ND_RETURN
+  # ^^^
+  mov rsp, rbp
+  pop rbp
+  mov rax, 0
+  ret
 test_variables:
   push rbp
   mov rbp, rsp
@@ -370,7 +463,7 @@ fact:
   sub rax, 4
   mov [rax], edi
   # vvv
-# <<< ND_IF0
+# <<< ND_IF1
   mov rax, rbp
   sub rax, 4
   push rax
@@ -386,14 +479,14 @@ fact:
   push rax
   pop rax
   cmp rax, 0
-  je .Lend0
+  je .Lend1
 # >>> ND_RETURN
   push 1
   pop rax
   mov rsp, rbp
   pop rbp
   ret # <<< ND_RETURN
-.Lend0: # <<< ND_IF0
+.Lend1: # <<< ND_IF1
 # >>> ND_RETURN
   mov rax, rbp
   sub rax, 4
@@ -443,30 +536,6 @@ fib:
   sub rax, 4
   mov [rax], edi
   # vvv
-# <<< ND_IF1
-  mov rax, rbp
-  sub rax, 4
-  push rax
-  pop rax
-  mov eax, [rax]
-  push rax
-  push 0
-  pop rdi
-  pop rax
-  cmp rax, rdi
-  sete al
-  movzx rax, al
-  push rax
-  pop rax
-  cmp rax, 0
-  je .Lend1
-# >>> ND_RETURN
-  push 0
-  pop rax
-  mov rsp, rbp
-  pop rbp
-  ret # <<< ND_RETURN
-.Lend1: # <<< ND_IF1
 # <<< ND_IF2
   mov rax, rbp
   sub rax, 4
@@ -474,7 +543,7 @@ fib:
   pop rax
   mov eax, [rax]
   push rax
-  push 1
+  push 0
   pop rdi
   pop rax
   cmp rax, rdi
@@ -485,12 +554,36 @@ fib:
   cmp rax, 0
   je .Lend2
 # >>> ND_RETURN
-  push 1
+  push 0
   pop rax
   mov rsp, rbp
   pop rbp
   ret # <<< ND_RETURN
 .Lend2: # <<< ND_IF2
+# <<< ND_IF3
+  mov rax, rbp
+  sub rax, 4
+  push rax
+  pop rax
+  mov eax, [rax]
+  push rax
+  push 1
+  pop rdi
+  pop rax
+  cmp rax, rdi
+  sete al
+  movzx rax, al
+  push rax
+  pop rax
+  cmp rax, 0
+  je .Lend3
+# >>> ND_RETURN
+  push 1
+  pop rax
+  mov rsp, rbp
+  pop rbp
+  ret # <<< ND_RETURN
+.Lend3: # <<< ND_IF3
 # >>> ND_RETURN
   mov rax, rbp
   sub rax, 4
@@ -554,30 +647,6 @@ fib_2:
   sub rax, 4
   mov [rax], edi
   # vvv
-# <<< ND_IF3
-  mov rax, rbp
-  sub rax, 4
-  push rax
-  pop rax
-  mov eax, [rax]
-  push rax
-  push 0
-  pop rdi
-  pop rax
-  cmp rax, rdi
-  sete al
-  movzx rax, al
-  push rax
-  pop rax
-  cmp rax, 0
-  je .Lend3
-# >>> ND_RETURN
-  push 0
-  pop rax
-  mov rsp, rbp
-  pop rbp
-  ret # <<< ND_RETURN
-.Lend3: # <<< ND_IF3
 # <<< ND_IF4
   mov rax, rbp
   sub rax, 4
@@ -585,7 +654,7 @@ fib_2:
   pop rax
   mov eax, [rax]
   push rax
-  push 1
+  push 0
   pop rdi
   pop rax
   cmp rax, rdi
@@ -596,13 +665,37 @@ fib_2:
   cmp rax, 0
   je .Lend4
 # >>> ND_RETURN
-  push 1
+  push 0
   pop rax
   mov rsp, rbp
   pop rbp
   ret # <<< ND_RETURN
 .Lend4: # <<< ND_IF4
 # <<< ND_IF5
+  mov rax, rbp
+  sub rax, 4
+  push rax
+  pop rax
+  mov eax, [rax]
+  push rax
+  push 1
+  pop rdi
+  pop rax
+  cmp rax, rdi
+  sete al
+  movzx rax, al
+  push rax
+  pop rax
+  cmp rax, 0
+  je .Lend5
+# >>> ND_RETURN
+  push 1
+  pop rax
+  mov rsp, rbp
+  pop rbp
+  ret # <<< ND_RETURN
+.Lend5: # <<< ND_IF5
+# <<< ND_IF6
   mov rax, rbp
   sub rax, 4
   push rax
@@ -642,7 +735,7 @@ fib_2:
   push rax
   pop rax
   cmp rax, 0
-  je .Lend5
+  je .Lend6
 # >>> ND_RETURN
   lea rax, g_memo_fib[rip]
   push rax
@@ -668,7 +761,7 @@ fib_2:
   mov rsp, rbp
   pop rbp
   ret # <<< ND_RETURN
-.Lend5: # <<< ND_IF5
+.Lend6: # <<< ND_IF6
 # >>> ND_RETURN
   mov rax, rbp
   sub rax, 4
@@ -1100,7 +1193,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-# <<< ND_IF6
+# <<< ND_IF7
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1116,7 +1209,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je .Lend6
+  je .Lend7
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1126,7 +1219,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-.Lend6: # <<< ND_IF6
+.Lend7: # <<< ND_IF7
   lea rax, [rip + .LC18]
   push rax
   mov rax, rbp
@@ -1157,7 +1250,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-# <<< ND_IF7
+# <<< ND_IF8
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1173,7 +1266,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je .Lend7
+  je .Lend8
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1183,7 +1276,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-.Lend7: # <<< ND_IF7
+.Lend8: # <<< ND_IF8
   lea rax, [rip + .LC19]
   push rax
   mov rax, rbp
@@ -1229,7 +1322,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je .Lelse8
+  je .Lelse9
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1239,8 +1332,8 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-  jmp .Lend8
-.Lelse8:
+  jmp .Lend9
+.Lelse9:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1250,7 +1343,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-.Lend8:
+.Lend9:
   lea rax, [rip + .LC20]
   push rax
   mov rax, rbp
@@ -1296,7 +1389,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je .Lelse9
+  je .Lelse10
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1306,8 +1399,8 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-  jmp .Lend9
-.Lelse9:
+  jmp .Lend10
+.Lelse10:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1317,7 +1410,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-.Lend9:
+.Lend10:
   lea rax, [rip + .LC21]
   push rax
   mov rax, rbp
@@ -1357,7 +1450,7 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-.Lbegin10:
+.Lbegin11:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1373,7 +1466,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je  .Lend10
+  je  .Lend11
   mov rax, rbp
   sub rax, 8
   push rax
@@ -1417,8 +1510,8 @@ pop rdi
   mov [rax], edi
   push rdi
   pop rax
-  jmp .Lbegin10
-.Lend10:
+  jmp .Lbegin11
+.Lend11:
   lea rax, [rip + .LC22]
   push rax
   mov rax, rbp
@@ -1457,7 +1550,7 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-.Lbegin11:
+.Lbegin12:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -1473,7 +1566,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je  .Lend11
+  je  .Lend12
   mov rax, rbp
   sub rax, 8
   push rax
@@ -1516,8 +1609,8 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-  jmp .Lbegin11
-.Lend11:
+  jmp .Lbegin12
+.Lend12:
   lea rax, [rip + .LC23]
   push rax
   mov rax, rbp
@@ -2322,7 +2415,7 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-.Lbegin12:
+.Lbegin13:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -2338,7 +2431,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je  .Lend12
+  je  .Lend13
   mov rax, rbp
   sub rax, 184
   push rax
@@ -2427,8 +2520,8 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-  jmp .Lbegin12
-.Lend12:
+  jmp .Lbegin13
+.Lend13:
   lea rax, [rip + .LC46]
   push rax
   mov rax, rbp
@@ -2468,7 +2561,7 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-.Lbegin13:
+.Lbegin14:
   mov rax, rbp
   sub rax, 4
   push rax
@@ -2484,7 +2577,7 @@ pop rdi
   push rax
   pop rax
   cmp rax, 0
-  je  .Lend13
+  je  .Lend14
   mov rax, rbp
   sub rax, 184
   push rax
@@ -2552,8 +2645,8 @@ pop rdi
   pop rax
   mov [rax], edi
   push rdi
-  jmp .Lbegin13
-.Lend13:
+  jmp .Lbegin14
+.Lend14:
   lea rax, [rip + .LC47]
   push rax
   mov rax, rbp

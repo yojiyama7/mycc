@@ -73,7 +73,7 @@ typedef enum {
   ND_BLOCK,     // {}
   // 関数定義
   ND_FUNCDEF,
-  // ???
+  // パース用(最終的なASTには残らない)
   ND_FUNCNAME,
 } NodeKind;
 

@@ -567,8 +567,6 @@ Node *toplevel(void) {
     node->defined_func->name = ident->str;
     node->defined_func->len = ident->len;
     cur_funcdef = node->defined_func; // 再起的に呼ばれないので問題ない
-    Node head; head.next = NULL;
-    Node *cur = &head;
     int i = 0;
     while (!consume(")") && i < 6) {
       Token *ident;
@@ -598,7 +596,6 @@ Node *toplevel(void) {
         expect(")");
         break;
       }
-      cur = cur->next;
       i++;
     }
     if (i == 6) {
