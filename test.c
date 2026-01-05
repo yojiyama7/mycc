@@ -8,28 +8,28 @@ int my_strlen(char *s) {
   return a;
 }
 
-// int my_strncmp(char *a, char *b, int n) {
-//   int i;
-//   for (i = 0; i < n; i = i + 1) {
-//     // a[i] が 0 ならここ
-//     if (a[i] == 0/*'\0'*/) return a[i] - b[i];
-//     // b[i] が 0 ならここ (a[i]は非zeroでb[i]と等しくない)
-//     if (a[i] != b[i]) return a[i] - b[i];
-//   }
-//   return 0;
-// }
+int my_strncmp(char *a, char *b, int n) {
+  int i;
+  for (i = 0; i < n; i = i + 1) {
+    // a[i] が 0 ならここ
+    if (a[i] == 0/*'\0'*/) return a[i] - b[i];
+    // b[i] が 0 ならここ (a[i]は非zeroでb[i]と等しくない)
+    if (a[i] != b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
 
-// char *my_strstr(char *hey, char *needle) {
-//   int hl; int nl; int i;
-//   hl = my_strlen(hey);
-//   nl = my_strlen(needle);
-//   if (nl > hl) return 0/*NULL*/;
-//   for (i = 0; i + nl <= hl; i = i + 1) {
-//     if (my_strncmp(hey + i, needle, nl) == 0)
-//       return hey + i;
-//   }
-//   return 0/*NULL*/;
-// }
+char *my_strstr(char *hey, char *needle) {
+  int hl; int nl; int i;
+  hl = my_strlen(hey);
+  nl = my_strlen(needle);
+  if (nl > hl) return 0/*NULL*/;
+  for (i = 0; i + nl <= hl; i = i + 1) {
+    if (my_strncmp(hey + i, needle, nl) == 0)
+      return hey + i;
+  }
+  return 0/*NULL*/;
+}
 
 // ========
 
@@ -187,5 +187,14 @@ int main() {
   comments
   */
   test("コメント", 1, 1);
+  char *s; s = "12345";
+  test("ポインター - ポインター", (s + 3) - s, 3);
+  s = ""; char *t; t = "";
+  test("自作strstr 1", my_strstr(s, t), s);
+  s = "abcdeabcde";
+  test("自作strstr 2", my_strstr(s, "cd") - s, 2);
+  test("自作strstr 3", my_strstr(s, "zxy"), 0/*NULL*/);
+  test("自作strstr 4", my_strstr(s, "abcdef"), 0/*NULL*/);
+  test("自作strstr 5", my_strstr(s, "e") - s, 4);
   end_test();
 }

@@ -167,7 +167,7 @@ extern char *reg_names[];
 
 extern char *user_input;
 extern Token *token;
-extern Func *cur_funcdef;
+extern Func *funcdefs;
 extern GVar *globals;
 extern String *string_literals;
 extern Node *code[100];

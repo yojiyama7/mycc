@@ -66,13 +66,13 @@ void solve_type(Node *node) {
     node->type = array_of(ty_char);
     return;
   case ND_ADD:
-    if (node->lhs->type->ptr_to && node->rhs->type == ty_int) {
+    if (node->lhs->type->ptr_to && !node->rhs->type->ptr_to) {
       node->type = copy_type(node->lhs->type);
       return;
     }
     break;
   case ND_SUB:
-    if (node->lhs->type->ptr_to && node->rhs->type == ty_int) {
+    if (node->lhs->type->ptr_to && !node->rhs->type->ptr_to) {
       node->type = copy_type(node->lhs->type);
       return;
     }
@@ -83,6 +83,8 @@ void solve_type(Node *node) {
     }
     node->type = copy_type(node->lhs->type->ptr_to);
     return;
+  case ND_CALL:
+    // return node.
   default:
     break;
   }

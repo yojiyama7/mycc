@@ -2,7 +2,7 @@
 
 Token *token;
 char *user_input;
-Func *cur_funcdef;
+Func *funcdefs; // 先頭に現在パース中のFUNCDEFのノード
 GVar *globals;
 String *string_literals; // XXX: Node として保存しているが個別に型を用意した方がいいかも
 Node *code[100];
@@ -240,7 +240,7 @@ Node *new_sub(Node *a, Node *b) {
 }
 
 LVar *find_lvar(Token *tok) {
-  for (LVar *var = cur_funcdef->locals; var; var = var->next) {
+  for (LVar *var = funcdefs->locals; var; var = var->next) {
     if (tok->len == var->len && memcmp(tok->str, var->name, var->len) == 0) {
       return var;
     }
@@ -252,6 +252,15 @@ GVar *find_gvar(Token *tok) {
   for (GVar *var = globals; var; var = var->next) {
     if (tok->len == var->len && memcmp(tok->str, var->name, var->len) == 0) {
       return var;
+    }
+  }
+  return NULL;
+}
+
+Func *find_func(Token *tok) {
+  for (Func *f = funcdefs; f; f = f->next) {
+    if (tok->len == f->len && memcmp(tok->str, f->name, f->len) == 0) {
+      return f;
     }
   }
   return NULL;
@@ -311,13 +320,17 @@ Node *postfix(void) {
   while (true) {
     if (consume("(")) {
       // CALL
+      // if (!f) {
+      //   error_at(node->token->str, "無効な関数名に対して呼び出ししています");
+      // }
       Node *nd = calloc(1, sizeof(Node));
       nd->kind = ND_CALL;
-      if (node->kind == ND_LVAR) { // QUESTION: これっている？ // 型で見た方がいいかも
-        error("ローカル変数を呼び出ししています");
-      }
       nd->call_name = node->token->str;
       nd->call_len = node->token->len;
+      Func *f = find_func(node->token);
+      if (f) { // 関数が既に定義されているならその型を利用する(現在includeなどの機能が無いため)
+        nd->type = f->ret;
+      }
       Node head; head.next = NULL;
       Node *cur = &head;
       if (!consume(")")) {
@@ -525,18 +538,18 @@ Node *stmt(void) {
       error("既に定義された変数名です");
     }
     LVar *lvar = calloc(1, sizeof(LVar));
-    lvar->next = cur_funcdef->locals;
+    lvar->next = funcdefs->locals;
     lvar->type = type;
     lvar->name = ident->str;
     lvar->len = ident->len;
     node->defined_lvar = lvar;
-    if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+    if (funcdefs->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
       // error("hi %d\n", calc_type_size(type));
       lvar->offset = calc_type_size(type);
     } else {
-      lvar->offset = cur_funcdef->locals->offset + calc_type_size(type);
+      lvar->offset = funcdefs->locals->offset + calc_type_size(type);
     }
-    cur_funcdef->locals = lvar;
+    funcdefs->locals = lvar;
   } else if (consume_keyword(TK_RETURN)) {
     // RETURN
     node = calloc(1, sizeof(Node));
@@ -566,7 +579,8 @@ Node *toplevel(void) {
     node->defined_func->ret = type;
     node->defined_func->name = ident->str;
     node->defined_func->len = ident->len;
-    cur_funcdef = node->defined_func; // 再起的に呼ばれないので問題ない
+    node->defined_func->next = funcdefs;
+    funcdefs = node->defined_func; // 再起的に呼ばれないので問題ない
     int i = 0;
     while (!consume(")") && i < 6) {
       Token *ident;
@@ -579,19 +593,19 @@ Node *toplevel(void) {
         error_at(ident->str, "同名の引数があります");
       }
       lvar = calloc(1, sizeof(LVar));
-      lvar->next = cur_funcdef->locals;
+      lvar->next = funcdefs->locals;
       lvar->type = type;
       lvar->name = ident->str;
       lvar->len = ident->len;
       lvar->is_reg = true;
       lvar->reg_idx = i;
-      if (cur_funcdef->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
+      if (funcdefs->locals == NULL) { // XXX: localsがNULLになっているかもしれないのいやだね
         lvar->offset = calc_type_size(type);
       } else {
-        lvar->offset = cur_funcdef->locals->offset +  calc_type_size(type);
+        lvar->offset = funcdefs->locals->offset + calc_type_size(type);
       }
       node->offset = lvar->offset;
-      cur_funcdef->locals = lvar;
+      funcdefs->locals = lvar;
       if (!consume(",")) {
         expect(")");
         break;
