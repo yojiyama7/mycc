@@ -1,8 +1,8 @@
 #!/bin/bash
 
-./mycc test.c > test.s
-cc -z noexecstack test.s test_asset.c asset.c -o test
-./test
+./mycc test.c > tmp_test.s
+cc -z noexecstack tmp_test.s test_asset.c asset.c -o tmp_test
+./tmp_test
 if [ $? -eq 0 ]; then
   echo OK
 else

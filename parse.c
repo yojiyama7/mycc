@@ -550,6 +550,22 @@ Node *stmt(void) {
       lvar->offset = funcdefs->locals->offset + calc_type_size(type);
     }
     funcdefs->locals = lvar;
+    if (consume("=")) { // 初期化式許容バージョンを切り出すべきかも
+      Node *block = calloc(1, sizeof(Node));
+      block->kind = ND_BLOCK;
+      Node *asgn = calloc(1, sizeof(Node));
+      asgn->kind = ND_ASSIGN;
+      asgn->lhs = calloc(1, sizeof(Node));
+      asgn->lhs->kind = ND_LVAR;
+      asgn->lhs->offset = lvar->offset;
+      asgn->lhs->type = lvar->type;
+      asgn->rhs = expr();
+      block->body = node;
+      node->next = asgn;
+      // asgn->next = NULL;
+      expect(";");
+      return block;
+    }
   } else if (consume_keyword(TK_RETURN)) {
     // RETURN
     node = calloc(1, sizeof(Node));

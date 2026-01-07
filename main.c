@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
   // for (int i = 0; code[i]; i++) {
   //   print_node(code[i]);
   // }
-  fprintf(stderr, "\n");
+  // fprintf(stderr, "\n");
 
   printf(".intel_syntax noprefix\n");
   printf(".globl main\n");

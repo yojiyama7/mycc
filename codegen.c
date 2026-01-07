@@ -162,6 +162,7 @@ void gen(Node *node) {
     printf(".Lend%d:\n", sid);
     return ;
   case ND_BLOCK:
+    // error("HI!!!\n");
     cur = node->body;
     while (cur) {
       gen(cur);

@@ -196,5 +196,10 @@ int main() {
   test("自作strstr 3", my_strstr(s, "zxy"), 0/*NULL*/);
   test("自作strstr 4", my_strstr(s, "abcdef"), 0/*NULL*/);
   test("自作strstr 5", my_strstr(s, "e") - s, 4);
+  int new_int = 42;
+  test("初期化式ありのローカル変数定義(int)", new_int, 42);
+  char *new_string = "abc";
+  test("初期化式ありのローカル変数定義(char *)", new_string != 0/*NULL*/, 1);
+  test("...", new_string[0], 97);
   end_test();
 }

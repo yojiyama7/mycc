@@ -53,6 +53,34 @@ void print_node(Node *node) {
     print_node(node->rhs);
     printfe(" }");
     return;
+  case ND_EQ:
+    printfe("EQ{ lhs: ");
+    print_node(node->lhs);
+    printfe(", rhs: ");
+    print_node(node->rhs);
+    printfe(" }");
+    return;
+  case ND_NE:
+    printfe("NE{ lhs: ");
+    print_node(node->lhs);
+    printfe(", rhs: ");
+    print_node(node->rhs);
+    printfe(" }");
+    return;
+  case ND_LT:
+    printfe("LT{ lhs: ");
+    print_node(node->lhs);
+    printfe(", rhs: ");
+    print_node(node->rhs);
+    printfe(" }");
+    return;
+  case ND_LE:
+    printfe("LE{ lhs: ");
+    print_node(node->lhs);
+    printfe(", rhs: ");
+    print_node(node->rhs);
+    printfe(" }");
+    return;
   case ND_ASSIGN:
     printfe("ASSIGN{ lhs: ");
     print_node(node->lhs);
@@ -91,6 +119,43 @@ void print_node(Node *node) {
   case ND_LVARDEF:
     printfe("LVARDEF{ name: %.*s, offset: %d }", node->defined_lvar->len, node->defined_lvar->name, node->defined_lvar->offset);
     return;
+  case ND_GVARDEF:
+    printfe("GVARDEF{ name: %.*s }", node->defined_gvar->len, node->defined_gvar->name);
+    return;
+  case ND_IF:
+    printfe("IF{ cond: ");
+    print_node(node->cond);
+    printfe(", then: ");
+    print_node(node->then);
+    printfe(" }");
+    return;
+  case ND_IFELSE:
+    printfe("IFELSE{ cond: ");
+    print_node(node->cond);
+    printfe(", then: ");
+    print_node(node->then);
+    printfe(", els: ");
+    print_node(node->els);
+    printfe(" }");
+    return;
+  case ND_FOR:
+    printfe("FOR{ init: ");
+    print_node(node->init);
+    printfe(", cond: ");
+    print_node(node->cond);
+    printfe(", inc: ");
+    print_node(node->inc);
+    printfe(", then: ");
+    print_node(node->then);
+    printfe(" }");
+    return;
+  case ND_WHILE:
+    printfe("WHILE{ cond: ");
+    print_node(node->cond);
+    printfe(", then: ");
+    print_node(node->then);
+    printfe(" }");
+    return;
   case ND_BLOCK:
     printfe("BLOCK{ body: [ ");
     for (Node *n = node->body; n; n = n->next) {
@@ -100,12 +165,12 @@ void print_node(Node *node) {
     printfe("] }");
     return;
   case ND_FUNCDEF:
-    printfe("FUNCDEF{ name: %.*s, lvar: [", node->call_len, node->call_name);
+    printfe("FUNCDEF{ name: %.*s, lvar: [", node->defined_func->len, node->defined_func->name);
     for (LVar *lvar = node->defined_func->locals; lvar; lvar = lvar->next) {
       printfe("LVAR(name: %.*s, offset: %d) ", lvar->len, lvar->name, lvar->offset);
     }
     printfe("], body: [ ");
-    for (Node *n = node->body; n; n = n->next) {
+    for (Node *n = node->defined_func->body; n; n = n->next) {
       print_node(n);
       printfe(", ");
     }
@@ -115,6 +180,6 @@ void print_node(Node *node) {
     printfe("FUNCNAME{ name: %.*s }", node->call_len, node->call_name);
     return;
   default:
-    printfe("未知のノードです, kind=%d\n", node->kind);
   }
+  printfe("未知のノードです, kind=%d\n", node->kind);
 }
