@@ -180,6 +180,7 @@ void print_node(Node *node) {
     printfe("FUNCNAME{ name: %.*s }", node->call_len, node->call_name);
     return;
   default:
+    break;
   }
   printfe("未知のノードです, kind=%d\n", node->kind);
 }
